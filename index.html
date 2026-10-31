@@ -81,9 +81,6 @@
       <div class="glass rounded-2xl p-4">
         <div class="flex items-center justify-between mb-3">
           <h2 class="font-display font-bold text-white">Groups</h2>
-          <button type="button" @click="toggleNew()" :aria-expanded="showNew" class="flex items-center gap-1.5 pl-2 pr-2.5 py-1.5 rounded-lg text-sm text-glow hover:bg-slate-700/60 transition" aria-label="New group">
-            <i data-lucide="folder-plus" class="w-5 h-5"></i><span>New</span>
-          </button>
         </div>
         <nav class="space-y-1 max-h-[60vh] overflow-y-auto">
           <template x-for="g in groups" :key="g">
@@ -93,7 +90,7 @@
             </button>
           </template>
           <p x-show="groupsLoading" class="text-sm text-slate-400 px-1">Loading groups…</p>
-          <p x-show="!groupsLoading && !groups.length" class="text-sm text-slate-400 px-1">No groups yet. Press New to create one.</p>
+          <p x-show="!groupsLoading && !groups.length" class="text-sm text-slate-400 px-1">No groups available yet.</p>
         </nav>
       </div>
       <button type="button" @click="openWall()" :aria-pressed="view==='wall'" dir="rtl"
@@ -107,7 +104,6 @@
 
     <!-- Groups: swipeable chips on mobile/tablet -->
     <div class="lg:hidden -mx-4 px-4 overflow-x-auto noscroll flex gap-2 pb-1">
-      <button type="button" @click="toggleNew()" class="shrink-0 min-h-[44px] flex items-center gap-1.5 px-4 rounded-full border border-dashed border-glow/60 text-glow text-sm"><i data-lucide="plus" class="w-4 h-4"></i>New group</button>
       <span x-show="groupsLoading" class="shrink-0 min-h-[44px] flex items-center px-4 text-sm text-slate-400">Loading groups…</span>
       <template x-for="g in groups" :key="g">
         <button @click="selectGroup(g)" :class="active===g && view==='files' ? 'bg-glow text-ink font-semibold border-glow' : 'glass text-slate-200'" class="shrink-0 min-h-[44px] max-w-[70vw] px-4 rounded-full border border-transparent text-sm truncate" dir="auto" x-text="pretty(g)"></button>
@@ -122,17 +118,12 @@
 
     <main class="min-w-0 space-y-5">
 
-      <!-- New group form (shared by desktop button and mobile chip) -->
-      <form x-show="showNew" @submit.prevent="createGroup()" class="glass rounded-2xl p-4 flex gap-2 rise">
-        <input x-ref="newGroup" x-model="newGroup" dir="auto" maxlength="40" placeholder="New group name (e.g. الصف الأول)" class="min-w-0 flex-1 min-h-[44px] bg-ink/70 border border-slate-600/60 rounded-lg px-3 text-sm focus:border-glow outline-none">
-        <button :disabled="busy" class="min-h-[44px] bg-glow text-ink font-semibold text-sm px-4 rounded-lg disabled:opacity-60">Add group</button>
-      </form>
 
       <div x-show="view==='files'" class="space-y-5">
       <!-- Upload is only available inside a folder -->
       <div x-show="active && !folder" class="glass rounded-2xl p-4 flex items-center gap-3 text-sm text-slate-300">
         <i data-lucide="lock" class="w-5 h-5 shrink-0 text-violet2"></i>
-        <p>Files can only be uploaded inside a folder. Open or create a folder below to start uploading.</p>
+        <p>Files can only be uploaded inside a folder. Open a folder below to start uploading.</p>
       </div>
       <section x-show="folder" class="glass rounded-2xl p-4 sm:p-5 rise">
         <div class="flex flex-wrap items-center justify-between gap-1 mb-3">
@@ -203,12 +194,7 @@
         <div x-show="active && !folder" class="space-y-3">
           <div class="flex items-center justify-between">
             <h3 class="text-sm font-medium text-slate-300">Folders</h3>
-            <button type="button" @click="toggleNewFolder()" class="min-h-[44px] flex items-center gap-1.5 px-2 text-sm text-glow"><i data-lucide="folder-plus" class="w-4 h-4"></i>New folder</button>
           </div>
-          <form x-show="showNewFolder" @submit.prevent="createFolder()" class="flex gap-2 rise">
-            <input x-ref="newFolder" x-model="newFolder" dir="auto" maxlength="40" placeholder="Folder name (e.g. الترم الثاني)" class="min-w-0 flex-1 min-h-[44px] bg-ink/70 border border-slate-600/60 rounded-lg px-3 text-sm focus:border-glow outline-none">
-            <button :disabled="busy" class="min-h-[44px] bg-glow text-ink font-semibold text-sm px-4 rounded-lg disabled:opacity-60">Add</button>
-          </form>
           <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
             <template x-for="f in filteredFolders" :key="f">
               <button @click="openFolder(f)" class="card glass rounded-xl min-h-[56px] px-3 py-3 flex items-center gap-2.5 text-left text-sm text-white min-w-0">
@@ -216,7 +202,7 @@
               </button>
             </template>
           </div>
-          <p x-show="!loading && !error && !folders.length && !showNewFolder" class="text-sm text-slate-400">No folders in this group yet. Create one, then open it to upload files.</p>
+          <p x-show="!loading && !error && !folders.length" class="text-sm text-slate-400">No folders in this group yet.</p>
         </div>
 
         <div x-show="loading" class="text-center py-12 text-slate-400">
@@ -241,9 +227,20 @@
                   <p class="text-xs text-slate-400 mt-0.5" x-text="fmtSize(f.size) + ' · ' + fmtDate(f.date)"></p>
                 </div>
               </div>
-              <a :href="f.url" :download="f.name" target="_blank" rel="noopener" class="mt-auto min-h-[44px] flex items-center justify-center gap-2 text-sm font-medium rounded-lg bg-slate-700/50 hover:bg-glow hover:text-ink transition">
-                <i data-lucide="download" class="w-4 h-4"></i>Download
-              </a>
+              <div class="mt-auto flex flex-wrap items-stretch gap-2">
+                <a :href="f.url" :download="f.name" target="_blank" rel="noopener" class="flex-1 min-h-[44px] flex items-center justify-center gap-2 text-sm font-medium rounded-lg bg-slate-700/50 hover:bg-glow hover:text-ink transition">
+                  <i data-lucide="download" class="w-4 h-4"></i>Download
+                </a>
+                <!-- Delete: only rendered as visible for files uploaded from THIS browser (owner tag matches) -->
+                <button x-show="f.mine && delKey !== f.key" type="button" @click="delKey = f.key" dir="rtl" class="min-h-[44px] px-4 rounded-lg text-sm flex items-center justify-center gap-1.5 text-rose-300 border border-rose-400/30 hover:bg-rose-400/15 transition" aria-label="حذف الملف">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>حذف
+                </button>
+                <div x-show="f.mine && delKey === f.key" dir="rtl" class="w-full flex flex-wrap items-center gap-2">
+                  <span class="text-sm text-slate-300">متأكد إنك عايز تحذف الملف؟</span>
+                  <button type="button" @click="removeFile(f)" :disabled="deleting" class="min-h-[44px] px-4 rounded-lg bg-rose-500 text-white text-sm font-semibold disabled:opacity-60">نعم، احذف</button>
+                  <button type="button" @click="delKey = ''" class="min-h-[44px] px-3 rounded-lg bg-slate-700/50 text-sm">إلغاء</button>
+                </div>
+              </div>
             </article>
           </template>
         </div>
@@ -336,6 +333,7 @@ const CONFIG = {
 /* Policies (SQL editor), using your bucket name:
    create policy "2ta read"   on storage.objects for select using (bucket_id='user_2TA');
    create policy "2ta upload" on storage.objects for insert with check (bucket_id='user_2TA');
+   create policy "2ta delete" on storage.objects for delete using (bucket_id='user_2TA');   -- NEW: required for the Delete button
 
    Class wall — run this whole script once in the Supabase SQL editor (safe to re-run).
    Reads are public; writes go ONLY through the three functions, which check a secret
@@ -415,6 +413,27 @@ const dec = (s, raw) => {
   } catch { return s; }
 };
 const readMine = () => { try { return JSON.parse(localStorage.getItem('2ta_mine')) || {}; } catch (e) { return {}; } };   // { postId: secret token }
+/* Anonymous owner identity: a random id lives only in this browser's localStorage.
+   Files get a public, non-reversible TAG derived from it (first 8 bytes of SHA-256) in their storage name,
+   so the raw id is never exposed. A file is "mine" when its tag matches this browser's tag. */
+const getUid = () => {
+  try {
+    let u = localStorage.getItem('2ta_uid');
+    if (!u) { u = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join(''); localStorage.setItem('2ta_uid', u); }
+    return u;
+  } catch (e) { return ''; }
+};
+const getOwnerTag = async () => {
+  const uid = getUid(); if (!uid) return '';
+  try {
+    const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(uid));
+    return Array.from(new Uint8Array(h).slice(0, 8), b => b.toString(16).padStart(2, '0')).join('');
+  } catch (e) {   // crypto.subtle needs HTTPS; weak fallback keeps things working elsewhere
+    let a = 5381, b = 52711;
+    for (const c of uid) { a = ((a << 5) + a + c.charCodeAt(0)) >>> 0; b = ((b << 5) ^ b ^ c.charCodeAt(0)) >>> 0; }
+    return a.toString(16).padStart(8, '0') + b.toString(16).padStart(8, '0');
+  }
+};
 const cmp = (a, b) => dec(a).localeCompare(dec(b));
 const SYNC_MS = 15000;   // how often the site re-checks Supabase for added/removed groups, folders and files
 
@@ -423,15 +442,18 @@ function twota() {
     CONFIG, demo: !configured, syncOk: true, syncing: false, busy: false,
     groups: [], active: '', folder: '', folders: [], files: [], search: '', error: '',
     queue: [], uploading: false, done: 0, total: 0, loading: false, groupsLoading: true, refreshing: false,
-    drag: false, showNew: false, newGroup: '', showNewFolder: false, newFolder: '',
+    drag: false, delKey: '', deleting: false, ownerTag: '',
     view: 'files', posts: [], postsLoading: false, postsError: '', postName: '', postText: '', posting: false, lastPost: 0, wallLoaded: false,
     mine: {}, formError: '', editId: '', editText: '', editError: '', savingEdit: false, delId: '',
-    toasts: [], memory: {}, memFolders: {}, cache: {}, req: 0,
+    toasts: [], memory: {}, cache: {}, req: 0,
+    // Fixed folders used only in demo mode (with Supabase, groups/folders come from Storage)
+    memFolders: { General_Notes: ['Lectures'], Math: ['Homework'], Physics: ['Homework'], Exams: ['Midterm'] },
 
     async init() {
       if (configured) { try { sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY); } catch (e) { console.error('Supabase init failed:', e); } }
       this.demo = !sb;
       this.mine = readMine();
+      this.ownerTag = await getOwnerTag();
       let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => lucide.createIcons(), 40); })
         .observe(document.body, { childList: true, subtree: true });
       lucide.createIcons();
@@ -472,18 +494,19 @@ function twota() {
       setTimeout(() => this.toasts = this.toasts.filter(t => t.id !== id), 4500);
     },
     // Storage key for an uploaded file: timestamp + encoded base name + clean extension
-    // New key format: <timestamp>-<encoded display name><original extension>
+    // New key format: <timestamp>-<encoded display name>@<owner tag><original extension>
     // (legacy files use "_" after the timestamp and keep showing their old names)
     fileKey(name, title) {
       const i = name.lastIndexOf('.');
       const ext = i > 0 ? name.slice(i).replace(/[^\w.]/g, '').slice(0, 12) : '';
-      return `${Date.now()}-${enc(title.trim().slice(0, 80)) || 'file'}${ext}`;
+      return `${Date.now()}-${enc(title.trim().slice(0, 80)) || 'file'}${this.ownerTag ? '@' + this.ownerTag : ''}${ext}`;
     },
     fileMeta(stored) {
       const m = stored.match(/^(\d{10,})([_-])(.*)$/), rest = m ? m[3] : stored;
       const i = rest.lastIndexOf('.'), base = i > 0 ? rest.slice(0, i) : rest, ext = i > 0 ? rest.slice(i) : '';
-      const text = dec(base, true);
-      return { title: m && m[2] === '-' ? text : text + ext, name: text + ext, ext: ext.slice(1).toLowerCase() };
+      const om = base.match(/^(.*)@([0-9a-f]{16})$/), owner = om ? om[2] : '';   // legacy files have no owner tag
+      const text = dec(om ? om[1] : base, true);
+      return { title: m && m[2] === '-' ? text : text + ext, name: text + ext, ext: ext.slice(1).toLowerCase(), owner };
     },
     mergeFolders(remote) {
       return [...new Set([...(this.demo ? this.memFolders[this.active] || [] : []), ...remote])].sort(cmp);
@@ -507,7 +530,7 @@ function twota() {
       return true;
     },
     async sync() {
-      if (!sb || document.hidden || this.uploading || this.syncing || this.busy) return;
+      if (!sb || document.hidden || this.uploading || this.deleting || this.syncing || this.busy) return;
       this.syncing = true;
       try {
         if (this.view === 'wall') await this.loadPosts(true);   // fallback if Realtime isn't enabled
@@ -520,63 +543,17 @@ function twota() {
     },
 
     /* ---------- groups ---------- */
-    toggleNew() {
-      this.showNew = !this.showNew;
-      if (this.showNew) setTimeout(() => { try { this.$refs.newGroup.focus(); } catch (e) {} }, 60);
-    },
-    async createGroup() {
-      const raw = this.newGroup.trim();
-      if (this.busy) return;
-      if (!raw) return this.toast('Enter a group name.', 'error');
-      if (this.groups.some(g => dec(g).toLowerCase() === raw.toLowerCase())) return this.toast('That group already exists.', 'error');
-      const name = enc(raw);
-      this.busy = true;
-      try {
-        if (sb) {   // storage has no empty folders, so a tiny placeholder file makes the group exist
-          const { error } = await sb.storage.from(CONFIG.BUCKET).upload(`${name}/.keep`, new Blob(['']), { upsert: true });
-          if (error) return this.toast('Could not create group: ' + this.explain(error), 'error');
-        }
-        this.groups = [...this.groups, name].sort(cmp);
-        this.newGroup = ''; this.showNew = false;
-        await this.selectGroup(name); this.toast(`Group "${raw}" created.`);
-      } finally { this.busy = false; }
-    },
     async selectGroup(g) {
-      this.view = 'files'; this.active = g; this.folder = ''; this.search = ''; this.queue = []; this.showNewFolder = false;
+      this.view = 'files'; this.active = g; this.folder = ''; this.search = ''; this.queue = []; this.delKey = '';
       await this.loadFiles();
     },
 
     /* ---------- folders (inside a group; the only place files can live) ---------- */
     async openFolder(f) {
       if (this.folder === f) return;
-      this.folder = f; this.search = ''; this.queue = [];
+      this.folder = f; this.search = ''; this.queue = []; this.delKey = '';
       await this.loadFiles();
     },
-    toggleNewFolder() {
-      this.showNewFolder = !this.showNewFolder;
-      if (this.showNewFolder) setTimeout(() => { try { this.$refs.newFolder.focus(); } catch (e) {} }, 60);
-    },
-    async createFolder() {
-      const raw = this.newFolder.trim();
-      if (this.busy) return;
-      if (!this.active) return this.toast('Select a group first.', 'error');
-      if (!raw) return this.toast('Enter a folder name.', 'error');
-      if (this.folders.some(f => dec(f).toLowerCase() === raw.toLowerCase())) return this.toast('That folder already exists.', 'error');
-      const seg = enc(raw);
-      this.busy = true;
-      try {
-        if (sb) {
-          const { error } = await sb.storage.from(CONFIG.BUCKET).upload(`${this.active}/${seg}/.keep`, new Blob(['']), { upsert: true });
-          if (error) return this.toast('Could not create folder: ' + this.explain(error), 'error');
-        } else (this.memFolders[this.active] ||= []).push(seg);
-        delete this.cache[this.active];
-        this.folders = this.mergeFolders([...this.folders, seg]);
-        this.newFolder = ''; this.showNewFolder = false;
-        this.toast(`Folder "${raw}" created.`);
-        await this.openFolder(seg);
-      } finally { this.busy = false; }
-    },
-
     /* ---------- files ---------- */
     // silent = background sync: no spinners, no error banner, never cancels a user navigation
     async loadFiles(silent = false) {
@@ -599,6 +576,7 @@ function twota() {
       const files = data.filter(x => x.id && !x.name.startsWith('.')   /* hide .keep and Supabase's .emptyFolderPlaceholder */).map(x => {
         const key = `${path}/${x.name}`, m = this.fileMeta(x.name);
         return { key, title: m.title, name: m.name, ext: m.ext, size: x.metadata?.size, date: x.created_at,
+          mine: !!this.ownerTag && m.owner === this.ownerTag,
           url: bucket.getPublicUrl(key, { download: m.name }).data.publicUrl };
       });
       const folders = this.folder ? [] : this.mergeFolders(data.filter(x => x.id === null).map(x => x.name));
@@ -649,7 +627,7 @@ function twota() {
           } else {   // demo mode
             const ext = f.name.includes('.') ? f.name.split('.').pop().toLowerCase() : '';
             (this.memory[path] ||= []).unshift({ key: crypto.randomUUID(), title: q.title.trim(), name: q.title.trim() + (ext ? '.' + ext : ''),
-              size: f.size, date: new Date().toISOString(), ext, url: URL.createObjectURL(f) });
+              size: f.size, date: new Date().toISOString(), ext, mine: true, url: URL.createObjectURL(f) });
           }
           ok++;
         } catch (e) { this.toast(`"${q.title}" failed: ${this.explain(e)}`, 'error'); }
@@ -661,9 +639,27 @@ function twota() {
       await this.loadFiles();
     },
 
+    async removeFile(f) {
+      if (!f.mine || this.deleting) return;   // only the uploader's browser may delete
+      this.deleting = true; this.delKey = '';
+      const path = this.path();
+      try {
+        if (sb) {
+          const { data, error } = await sb.storage.from(CONFIG.BUCKET).remove([f.key]);
+          if (error) throw error;
+          // Storage returns an empty list (no error) when RLS blocks the delete
+          if (!data || !data.length) throw new Error('delete_blocked');
+        } else this.memory[path] = (this.memory[path] || []).filter(x => x.key !== f.key);
+        this.files = this.files.filter(x => x.key !== f.key);   // update the list immediately
+        delete this.cache[path];
+        this.toast('تم حذف الملف.');
+      } catch (e) { this.toast(`Could not delete "${f.title}": ${this.explain(e)}`, 'error'); }
+      finally { this.deleting = false; }
+    },
+
     /* ---------- class wall (table: class_posts) ---------- */
     async openWall() {
-      this.view = 'wall'; this.showNew = false;
+      this.view = 'wall';
       if (!this.postName) { try { this.postName = localStorage.getItem('2ta_name') || ''; } catch (e) {} }
       if (!this.wallLoaded) await this.loadPosts();
       this.subscribeWall();
@@ -761,6 +757,7 @@ function twota() {
       const m = (e?.message || String(e)).toLowerCase();
       if (m.includes('bucket not found')) return `Bucket "${CONFIG.BUCKET}" doesn't exist. Create it in Supabase → Storage.`;
       if (m.includes('row-level security') || m.includes('not authorized') || m.includes('unauthorized')) return 'Permission denied. Add the storage policies from the CONFIG comment.';
+      if (m.includes('delete_blocked')) return 'Supabase refused the delete. Add the "2ta delete" policy from the CONFIG comment.';
       if (m.includes('invalid key')) return 'The name has characters storage rejects. Rename it.';
       if (m.includes('jwt') || m.includes('apikey') || m.includes('invalid api')) return 'Invalid SUPABASE_ANON_KEY. Check the key in CONFIG.';
       if (m.includes('failed to fetch') || m.includes('network')) return 'Network error. Check your connection and SUPABASE_URL.';
