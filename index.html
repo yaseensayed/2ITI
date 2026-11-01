@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>2TA — Class Study Repository</title>
+<title>2ITI — Class Study Repository</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
@@ -43,27 +43,65 @@
 <header class="sticky top-0 z-40 glass border-x-0 border-t-0">
   <div class="max-w-7xl mx-auto px-4 h-16 flex items-center gap-3">
     <div class="flex items-center gap-2.5 min-w-0">
-      <div class="w-9 h-9 shrink-0 rounded-xl grid place-items-center font-display font-bold text-ink bg-gradient-to-br from-glow to-violet2 shadow-[0_0_20px_rgba(56,189,248,.45)]">2T</div>
-      <span class="font-display font-bold text-xl tracking-tight text-white">2TA</span>
+      <div class="w-9 h-9 shrink-0 rounded-xl grid place-items-center font-display font-bold text-ink bg-gradient-to-br from-glow to-violet2 shadow-[0_0_20px_rgba(56,189,248,.45)]">2I</div>
+      <span class="font-display font-bold text-xl tracking-tight text-white">2ITI</span>
       <span class="hidden sm:inline text-xs text-slate-400 border border-slate-600/60 rounded-full px-2 py-0.5">study repository</span>
     </div>
     <div class="flex-1"></div>
     <span x-show="!demo" class="flex items-center gap-1.5 text-xs text-slate-300" :title="syncOk ? 'Synced with Supabase' : 'Connection problem'"><span class="w-2 h-2 rounded-full" :class="syncOk ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'"></span><span class="hidden sm:inline" x-text="syncOk ? 'Live' : 'Offline'"></span></span>
     <span x-show="demo" class="hidden sm:flex items-center gap-1.5 text-xs text-amber-300 bg-amber-400/10 border border-amber-400/30 rounded-full px-3 py-1"><i data-lucide="flask-conical" class="w-3.5 h-3.5"></i>Demo mode</span>
-    <button @click="openPicker()" :class="!folder && 'opacity-50'" :title="folder ? 'Upload files' : 'Open a folder to upload'" class="min-h-[44px] flex items-center gap-2 bg-glow text-ink font-semibold text-sm px-4 rounded-xl hover:brightness-110 transition shadow-[0_0_18px_rgba(56,189,248,.35)]">
+    <div x-show="profile" class="flex items-center gap-1.5 min-w-0">
+      <button type="button" @click="openProfile()" :aria-pressed="view==='profile'" title="الملف الشخصي" class="min-h-[44px] max-w-[8.5rem] sm:max-w-[15rem] flex items-center gap-2 px-3 rounded-xl text-sm text-slate-100 transition hover:brightness-110" :class="view==='profile' ? 'bg-violet2/20 border border-violet2/60' : 'glass'">
+        <i data-lucide="user-round" class="w-4 h-4 shrink-0 text-glow"></i><span class="truncate" dir="auto" x-text="profile && profile.full_name"></span>
+      </button>
+      <button type="button" @click="logout()" aria-label="تسجيل الخروج" title="تسجيل الخروج" class="shrink-0 w-11 h-11 grid place-items-center rounded-lg text-slate-300 hover:text-rose-300 hover:bg-rose-400/15 transition"><i data-lucide="log-out" class="w-5 h-5"></i></button>
+    </div>
+    <button x-show="authed" @click="openPicker()" :class="!folder && 'opacity-50'" :title="folder ? 'Upload files' : 'Open a folder to upload'" class="min-h-[44px] flex items-center gap-2 bg-glow text-ink font-semibold text-sm px-4 rounded-xl hover:brightness-110 transition shadow-[0_0_18px_rgba(56,189,248,.35)]">
       <i data-lucide="upload" class="w-4 h-4"></i><span class="hidden sm:inline">Upload files</span>
     </button>
   </div>
 </header>
 
-<div class="max-w-7xl mx-auto px-4 py-5 sm:py-6 space-y-5">
+<!-- Auth gate: nothing of the app is shown until a student has signed in -->
+<div x-show="!ready" class="min-h-[60vh] grid place-items-center text-slate-400">
+  <svg class="animate-spin w-8 h-8 text-glow" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity=".25"/><path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+</div>
+<section x-show="ready && !authed" dir="rtl" lang="ar" class="max-w-md mx-auto px-4 py-10 sm:py-16 rise">
+  <div class="glass rounded-2xl p-6 sm:p-8 space-y-5">
+    <div class="text-center space-y-2">
+      <div class="w-14 h-14 mx-auto rounded-2xl grid place-items-center font-display font-bold text-xl text-ink bg-gradient-to-br from-glow to-violet2 shadow-[0_0_24px_rgba(56,189,248,.45)]">2I</div>
+      <h1 class="font-display font-bold text-2xl text-white">تسجيل الدخول</h1>
+      <p class="text-sm text-slate-400 leading-7">ادخل باسم المستخدم وكلمة المرور الخاصة بيك عشان تفتح قاعدة بيانات 2ITI.</p>
+    </div>
+    <form @submit.prevent="login()" class="space-y-4" novalidate>
+      <label class="block">
+        <span class="text-sm text-slate-300">اسم المستخدم</span>
+        <input x-model="loginUser" @input="loginError=''" dir="ltr" type="text" name="username" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="80" required
+               class="mt-1 w-full min-h-[48px] bg-ink/70 border border-slate-600/60 rounded-lg px-3 text-sm focus:border-glow outline-none">
+      </label>
+      <label class="block">
+        <span class="text-sm text-slate-300">كلمة المرور</span>
+        <div class="relative mt-1">
+          <input x-model="loginPass" @input="loginError=''" dir="ltr" :type="showPass ? 'text' : 'password'" name="password" autocomplete="current-password" maxlength="128" required
+                 class="w-full min-h-[48px] bg-ink/70 border border-slate-600/60 rounded-lg pl-3 pr-3 text-sm focus:border-glow outline-none">
+        </div>
+      </label>
+      <label class="flex items-center gap-2 text-sm text-slate-400 min-h-[32px] cursor-pointer"><input type="checkbox" x-model="showPass" class="accent-sky-400 w-4 h-4"> إظهار كلمة المرور</label>
+      <p x-show="loginError" role="alert" class="rounded-lg border border-rose-400/40 bg-rose-400/10 px-3 py-2 text-sm text-rose-100" x-text="loginError"></p>
+      <button :disabled="loggingIn" class="w-full min-h-[48px] rounded-xl bg-glow text-ink font-semibold hover:brightness-110 disabled:opacity-60 transition" x-text="loggingIn ? 'جارٍ الدخول…' : 'دخول'"></button>
+    </form>
+  </div>
+</section>
+
+<div x-show="authed" class="max-w-7xl mx-auto px-4 py-5 sm:py-6 space-y-5">
 
   <!-- Welcome banner -->
   <section dir="rtl" lang="ar" class="relative isolate rise">
     <div class="absolute -inset-1 -z-10 rounded-3xl bg-gradient-to-r from-glow/40 via-violet2/40 to-glow/40 blur-xl opacity-60 animate-pulse"></div>
     <div class="rounded-2xl p-[1px] bg-gradient-to-br from-glow/60 via-slate-700/40 to-violet2/60">
       <p class="rounded-[15px] bg-ink/90 px-5 py-5 sm:px-8 sm:py-6 text-base sm:text-lg leading-[2] sm:leading-[2.1] font-medium text-slate-100">
-        أهلاً بك يا صديقي في قاعدة بيانات فصلنا 🥰 هنا هتلاقي كل الملخصات، الواجبات، الملاحظات، والحاجات اللي اتكتبت في الحصص. نسأل الله أن ننتفع بالموقع ده ويكون صدقة جارية، ومتنساش الدعوة الحلوة لأخوك 🥰
+        <span x-show="profile" x-text="greeting" class="block text-xl sm:text-2xl font-bold text-white mb-1"></span>
+        أهلاً بك يا صديقي في قاعدة بيانات فصول 2ITI 🥰 هنا هتلاقي كل الملخصات، الواجبات، الملاحظات، والحاجات اللي اتكتبت في الحصص. نسأل الله أن ننتفع بالموقع ده ويكون صدقة جارية، ومتنساش الدعوة الحلوة لأخوك 🥰
       </p>
     </div>
   </section>
@@ -75,57 +113,102 @@
 
   <div class="lg:grid lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-6 space-y-5 lg:space-y-0">
 
-    <!-- Groups: sidebar on desktop -->
+    <!-- Classes: sidebar on desktop -->
     <aside class="hidden lg:block">
       <div class="sticky top-24 space-y-3">
       <div class="glass rounded-2xl p-4">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="font-display font-bold text-white">Groups</h2>
-        </div>
-        <nav class="space-y-1 max-h-[60vh] overflow-y-auto">
-          <template x-for="g in groups" :key="g">
-            <button @click="selectGroup(g)" :class="active===g && view==='files' ? 'bg-glow/15 text-white border-glow/50' : 'border-transparent text-slate-300 hover:bg-slate-700/40'" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-left text-sm transition">
-              <i data-lucide="layers" class="w-4 h-4 shrink-0" :class="active===g && view==='files'?'text-glow':'text-slate-400'"></i>
-              <span class="truncate" dir="auto" x-text="pretty(g)"></span>
+        <h2 class="font-display font-bold text-white mb-3">Classes</h2>
+        <nav class="space-y-1">
+          <template x-for="c in CLASSES" :key="c">
+            <button @click="selectClass(c)" :class="active===c && view==='files' ? 'bg-glow/15 text-white border-glow/50' : 'border-transparent text-slate-300 hover:bg-slate-700/40'" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-left text-sm transition">
+              <i data-lucide="layers" class="w-4 h-4 shrink-0" :class="active===c && view==='files'?'text-glow':'text-slate-400'"></i>
+              <span class="truncate" x-text="c"></span>
             </button>
           </template>
-          <p x-show="groupsLoading" class="text-sm text-slate-400 px-1">Loading groups…</p>
-          <p x-show="!groupsLoading && !groups.length" class="text-sm text-slate-400 px-1">No groups available yet.</p>
         </nav>
       </div>
       <button type="button" @click="openWall()" :aria-pressed="view==='wall'" dir="rtl"
         :class="view==='wall' ? 'bg-violet2/20 border border-violet2/60' : 'glass'"
         class=" w-full min-h-[56px] flex items-center gap-3 rounded-2xl px-4 text-right text-slate-100 transition hover:brightness-110">
         <span class="w-9 h-9 shrink-0 rounded-xl grid place-items-center bg-gradient-to-br from-glow to-violet2 text-ink"><i data-lucide="messages-square" class="w-5 h-5"></i></span>
-        <span class="flex-1 min-w-0 text-sm font-semibold leading-snug">منتدى الواجبات والملاحظات</span>
+        <span class="flex-1 min-w-0 text-sm font-semibold leading-snug">مجتمع سيكوندا</span>
       </button>
       </div>
     </aside>
 
-    <!-- Groups: swipeable chips on mobile/tablet -->
-    <div class="lg:hidden -mx-4 px-4 overflow-x-auto noscroll flex gap-2 pb-1">
-      <span x-show="groupsLoading" class="shrink-0 min-h-[44px] flex items-center px-4 text-sm text-slate-400">Loading groups…</span>
-      <template x-for="g in groups" :key="g">
-        <button @click="selectGroup(g)" :class="active===g && view==='files' ? 'bg-glow text-ink font-semibold border-glow' : 'glass text-slate-200'" class="shrink-0 min-h-[44px] max-w-[70vw] px-4 rounded-full border border-transparent text-sm truncate" dir="auto" x-text="pretty(g)"></button>
+    <!-- Classes: chips on mobile/tablet -->
+    <div class="lg:hidden grid grid-cols-3 gap-2">
+      <template x-for="c in CLASSES" :key="c">
+        <button @click="selectClass(c)" :class="active===c && view==='files' ? 'bg-glow text-ink font-semibold border-glow' : 'glass text-slate-200'" class="min-h-[44px] px-3 rounded-full border border-transparent text-sm" x-text="c"></button>
       </template>
     </div>
     <button type="button" @click="openWall()" :aria-pressed="view==='wall'" dir="rtl"
         :class="view==='wall' ? 'bg-violet2/20 border border-violet2/60' : 'glass'"
         class="lg:hidden w-full min-h-[56px] flex items-center gap-3 rounded-2xl px-4 text-right text-slate-100 transition hover:brightness-110">
         <span class="w-9 h-9 shrink-0 rounded-xl grid place-items-center bg-gradient-to-br from-glow to-violet2 text-ink"><i data-lucide="messages-square" class="w-5 h-5"></i></span>
-        <span class="flex-1 min-w-0 text-sm font-semibold leading-snug">منتدى الواجبات والملاحظات</span>
+        <span class="flex-1 min-w-0 text-sm font-semibold leading-snug">مجتمع سيكوندا</span>
       </button>
 
     <main class="min-w-0 space-y-5">
 
 
       <div x-show="view==='files'" class="space-y-5">
-      <!-- Upload is only available inside a folder -->
-      <div x-show="active && !folder" class="glass rounded-2xl p-4 flex items-center gap-3 text-sm text-slate-300">
-        <i data-lucide="lock" class="w-5 h-5 shrink-0 text-violet2"></i>
-        <p>Files can only be uploaded inside a folder. Open a folder below to start uploading.</p>
+      <div x-show="error" class="rounded-2xl border border-rose-400/40 bg-rose-400/10 p-4 text-sm text-rose-100 flex flex-wrap items-center gap-3">
+        <i data-lucide="circle-alert" class="w-5 h-5 shrink-0"></i><p class="min-w-0 flex-1" x-text="error"></p>
+        <button @click="refresh()" class="min-h-[44px] px-4 rounded-lg bg-rose-400/20 hover:bg-rose-400/30">Try again</button>
       </div>
-      <section x-show="folder" class="glass rounded-2xl p-4 sm:p-5 rise">
+
+      <!-- Breadcrumb: Class / Category / Subject -->
+      <div class="flex items-center gap-2">
+        <nav class="flex items-center gap-1 min-w-0 flex-1 font-display font-bold text-base sm:text-lg" aria-label="Location">
+          <button x-show="active" @click="goUp()" class="shrink-0 w-11 h-11 -ml-2 grid place-items-center rounded-lg text-glow hover:bg-glow/15" aria-label="Back"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+          <button @click="selectClass('')" class="min-h-[44px] truncate" :class="active ? 'text-slate-400 hover:text-glow' : 'text-white'" x-text="active || 'Choose a class'"></button>
+          <template x-if="cat">
+            <span class="flex items-center gap-1 min-w-0"><i data-lucide="chevron-right" class="w-4 h-4 shrink-0 text-slate-500"></i>
+              <button @click="selectCat(cat)" class="min-h-[44px] truncate" :class="subj ? 'text-slate-400 hover:text-glow' : 'text-white'" dir="auto" x-text="catName"></button></span>
+          </template>
+          <template x-if="subj">
+            <span class="flex items-center gap-1 min-w-0 text-white"><i data-lucide="chevron-right" class="w-4 h-4 shrink-0 text-slate-500"></i><span class="truncate" dir="auto" x-text="subjName"></span></span>
+          </template>
+        </nav>
+        <template x-if="subj">
+          <span class="shrink-0 text-xs text-slate-400 bg-slate-700/50 rounded-full px-2.5 py-1" x-text="filtered.length + (filtered.length === 1 ? ' file' : ' files')"></span>
+        </template>
+        <button x-show="subj" @click="refresh()" :disabled="refreshing" aria-label="Refresh files" title="Refresh" class="shrink-0 w-11 h-11 grid place-items-center rounded-lg text-glow hover:bg-glow/15 disabled:opacity-60 transition">
+          <span class="block" :class="refreshing && 'animate-spin'"><i data-lucide="refresh-cw" class="w-4 h-4"></i></span>
+        </button>
+      </div>
+
+      <!-- Step 1: class -->
+      <div x-show="!active" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <template x-for="c in CLASSES" :key="c">
+          <button @click="selectClass(c)" class="card glass rounded-xl min-h-[72px] px-4 py-4 flex items-center gap-3 text-left text-white font-display font-bold text-lg">
+            <i data-lucide="layers" class="w-6 h-6 shrink-0 text-glow"></i><span x-text="c"></span>
+          </button>
+        </template>
+      </div>
+
+      <!-- Step 2: category -->
+      <div x-show="active && !cat" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <template x-for="c in CATEGORIES" :key="c.id">
+          <button @click="selectCat(c.id)" dir="rtl" class="card glass rounded-xl min-h-[72px] px-4 py-4 flex items-center gap-3 text-right text-white font-semibold text-lg">
+            <i :data-lucide="c.icon" class="w-6 h-6 shrink-0 text-violet2"></i><span x-text="c.name"></span>
+          </button>
+        </template>
+      </div>
+
+      <!-- Step 3: subject -->
+      <div x-show="active && cat && cat !== 'homework_notes' && !subj" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
+        <template x-for="s in SUBJECTS" :key="s.id">
+          <button @click="selectSubj(s.id)" class="card glass rounded-xl min-h-[56px] px-3 py-3 flex items-center gap-2.5 text-left text-sm text-white min-w-0">
+            <i data-lucide="folder" class="w-5 h-5 shrink-0 text-violet2"></i><span class="truncate" dir="auto" x-text="s.name"></span>
+          </button>
+        </template>
+      </div>
+
+      <!-- Step 4: upload + files (only inside class/category/subject) -->
+      <div x-show="subj" class="space-y-5">
+      <section class="glass rounded-2xl p-4 sm:p-5 rise">
         <div class="flex flex-wrap items-center justify-between gap-1 mb-3">
           <h2 class="font-display font-bold text-white text-lg min-w-0 truncate" dir="auto">Upload to <span class="text-glow" x-text="location || '…'"></span></h2>
           <span class="text-xs text-slate-400" x-text="'Any format · up to ' + CONFIG.MAX_FILE_MB + ' MB each'"></span>
@@ -157,7 +240,8 @@
             </li>
           </template>
           <li class="pt-1">
-            <button @click="upload()" :disabled="uploading || !active" class="w-full sm:w-auto min-h-[44px] flex items-center justify-center gap-2 bg-glow text-ink font-semibold px-5 rounded-xl disabled:opacity-60 hover:brightness-110 transition">
+            <p x-show="profile" class="mb-3 flex items-center gap-1.5 text-xs text-slate-400"><i data-lucide="lock" class="w-3.5 h-3.5"></i>Uploading as <span class="text-slate-200 font-medium" dir="auto" x-text="profile && profile.full_name"></span> (from your account)</p>
+            <button @click="upload()" :disabled="uploading || !subj" class="w-full sm:w-auto min-h-[44px] flex items-center justify-center gap-2 bg-glow text-ink font-semibold px-5 rounded-xl disabled:opacity-60 hover:brightness-110 transition">
               <svg x-show="uploading" class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity=".25"/><path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
               <span x-text="uploading ? `Uploading ${done}/${total}…` : `Upload ${queue.length} file${queue.length>1?'s':''}`"></span>
             </button>
@@ -165,100 +249,68 @@
         </ul>
       </section>
 
-      <!-- Browser: breadcrumb, folders, files -->
-      <section class="space-y-4">
-        <div x-show="error" class="rounded-2xl border border-rose-400/40 bg-rose-400/10 p-4 text-sm text-rose-100 flex flex-wrap items-center gap-3">
-          <i data-lucide="circle-alert" class="w-5 h-5 shrink-0"></i><p class="min-w-0 flex-1" x-text="error"></p>
-          <button @click="refresh()" class="min-h-[44px] px-4 rounded-lg bg-rose-400/20 hover:bg-rose-400/30">Try again</button>
-        </div>
-        <div class="flex items-center gap-2">
-          <nav class="flex items-center gap-1 min-w-0 flex-1 font-display font-bold text-base sm:text-lg" aria-label="Location">
-            <button x-show="folder" @click="openFolder('')" class="shrink-0 w-11 h-11 -ml-2 grid place-items-center rounded-lg text-glow hover:bg-glow/15" aria-label="Back to group"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
-            <button @click="openFolder('')" class="min-h-[44px] truncate max-w-[55%]" :class="folder ? 'text-slate-400 hover:text-glow' : 'text-white'" dir="auto" x-text="active ? pretty(active) : 'Repository'"></button>
-            <template x-if="folder">
-              <span class="flex items-center gap-1 min-w-0 text-white"><i data-lucide="chevron-right" class="w-4 h-4 shrink-0 text-slate-500"></i><span class="truncate" dir="auto" x-text="pretty(folder)"></span></span>
-            </template>
-          </nav>
-          <span class="shrink-0 text-xs text-slate-400 bg-slate-700/50 rounded-full px-2.5 py-1" x-text="filtered.length + (filtered.length === 1 ? ' file' : ' files')"></span>
-          <button @click="refresh()" :disabled="refreshing" aria-label="Refresh files" title="Refresh" class="shrink-0 w-11 h-11 grid place-items-center rounded-lg text-glow hover:bg-glow/15 disabled:opacity-60 transition">
-            <span class="block" :class="refreshing && 'animate-spin'"><i data-lucide="refresh-cw" class="w-4 h-4"></i></span>
-          </button>
-        </div>
+      <div class="relative">
+        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+        <input x-model.debounce.150ms="search" dir="auto" placeholder="Search files in this subject" class="w-full min-h-[44px] glass rounded-xl pl-9 pr-3 text-sm outline-none focus:border-glow">
+      </div>
 
-        <div class="relative">
-          <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-          <input x-model.debounce.150ms="search" dir="auto" placeholder="Search files and folders" class="w-full min-h-[44px] glass rounded-xl pl-9 pr-3 text-sm outline-none focus:border-glow">
-        </div>
+      <div x-show="loading" class="text-center py-12 text-slate-400">
+        <svg class="animate-spin w-8 h-8 mx-auto text-glow mb-3" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity=".25"/><path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+        Loading files…
+      </div>
 
-        <!-- Folders (shown at group level) -->
-        <div x-show="active && !folder" class="space-y-3">
-          <div class="flex items-center justify-between">
-            <h3 class="text-sm font-medium text-slate-300">Folders</h3>
-          </div>
-          <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
-            <template x-for="f in filteredFolders" :key="f">
-              <button @click="openFolder(f)" class="card glass rounded-xl min-h-[56px] px-3 py-3 flex items-center gap-2.5 text-left text-sm text-white min-w-0">
-                <i data-lucide="folder" class="w-5 h-5 shrink-0 text-violet2"></i><span class="truncate" dir="auto" x-text="pretty(f)"></span>
+      <div x-show="!loading && !error && !filtered.length" class="glass rounded-2xl py-10 px-4 text-center">
+        <i data-lucide="folder-open" class="w-10 h-10 mx-auto text-slate-500 mb-3"></i>
+        <p class="text-white font-medium" x-text="search ? 'No files match your search' : 'No files here yet'"></p>
+        <p class="text-sm text-slate-400 mt-1" x-text="search ? 'Try a different name.' : 'Upload a file above.'"></p>
+      </div>
+
+      <div class="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+        <template x-for="f in filtered" :key="f.key">
+          <article class="card glass rounded-2xl p-4 flex flex-col gap-3 min-w-0">
+            <div class="flex items-start gap-3 min-w-0">
+              <div class="w-12 h-12 shrink-0 rounded-xl grid place-items-center text-[11px] font-bold font-display" :style="badge(f.ext)" x-text="(f.ext||'FILE').slice(0,4).toUpperCase()"></div>
+              <div class="min-w-0">
+                <h3 class="font-medium text-white truncate" dir="auto" :title="f.title" x-text="f.title"></h3>
+                <p class="text-xs text-slate-400 mt-0.5" x-text="fmtSize(f.size) + ' · ' + fmtDate(f.date)"></p>
+                <p x-show="f.by" class="text-xs text-slate-500 mt-0.5 truncate" dir="auto" x-text="f.by"></p>
+              </div>
+            </div>
+            <div class="mt-auto flex flex-wrap items-stretch gap-2">
+              <a :href="f.url" :download="f.name" target="_blank" rel="noopener" class="flex-1 min-h-[44px] flex items-center justify-center gap-2 text-sm font-medium rounded-lg bg-slate-700/50 hover:bg-glow hover:text-ink transition">
+                <i data-lucide="download" class="w-4 h-4"></i>Download
+              </a>
+              <!-- Button is shown only in the uploader's browser; the server re-checks the secret token -->
+              <button x-show="f.mine && delKey !== f.key" type="button" @click="delKey = f.key" dir="rtl" class="min-h-[44px] px-4 rounded-lg text-sm flex items-center justify-center gap-1.5 text-rose-300 border border-rose-400/30 hover:bg-rose-400/15 transition" aria-label="حذف الملف">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>حذف
               </button>
-            </template>
-          </div>
-          <p x-show="!loading && !error && !folders.length" class="text-sm text-slate-400">No folders in this group yet.</p>
-        </div>
-
-        <div x-show="loading" class="text-center py-12 text-slate-400">
-          <svg class="animate-spin w-8 h-8 mx-auto text-glow mb-3" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity=".25"/><path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
-          Loading files…
-        </div>
-
-        <div x-show="!loading && !error && folder && !filtered.length" class="glass rounded-2xl py-10 px-4 text-center">
-          <i data-lucide="folder-open" class="w-10 h-10 mx-auto text-slate-500 mb-3"></i>
-          <p class="text-white font-medium" x-text="search ? 'No files match your search' : (folder ? 'This folder is empty' : 'No files directly in this group')"></p>
-          <p class="text-sm text-slate-400 mt-1" x-text="search ? 'Try a different name.' : 'Upload a file above.'"></p>
-        </div>
-
-        <h3 x-show="!folder && filtered.length" class="text-sm font-medium text-slate-300">Older files in this group</h3>
-        <div class="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
-          <template x-for="f in filtered" :key="f.key">
-            <article class="card glass rounded-2xl p-4 flex flex-col gap-3 min-w-0">
-              <div class="flex items-start gap-3 min-w-0">
-                <div class="w-12 h-12 shrink-0 rounded-xl grid place-items-center text-[11px] font-bold font-display" :style="badge(f.ext)" x-text="(f.ext||'FILE').slice(0,4).toUpperCase()"></div>
-                <div class="min-w-0">
-                  <h3 class="font-medium text-white truncate" dir="auto" :title="f.title" x-text="f.title"></h3>
-                  <p class="text-xs text-slate-400 mt-0.5" x-text="fmtSize(f.size) + ' · ' + fmtDate(f.date)"></p>
-                </div>
+              <div x-show="f.mine && delKey === f.key" dir="rtl" class="w-full flex flex-wrap items-center gap-2">
+                <span class="text-sm text-slate-300">متأكد إنك عايز تحذف الملف؟</span>
+                <button type="button" @click="removeFile(f)" :disabled="deleting" class="min-h-[44px] px-4 rounded-lg bg-rose-500 text-white text-sm font-semibold disabled:opacity-60">نعم، احذف</button>
+                <button type="button" @click="delKey = ''" class="min-h-[44px] px-3 rounded-lg bg-slate-700/50 text-sm">إلغاء</button>
               </div>
-              <div class="mt-auto flex flex-wrap items-stretch gap-2">
-                <a :href="f.url" :download="f.name" target="_blank" rel="noopener" class="flex-1 min-h-[44px] flex items-center justify-center gap-2 text-sm font-medium rounded-lg bg-slate-700/50 hover:bg-glow hover:text-ink transition">
-                  <i data-lucide="download" class="w-4 h-4"></i>Download
-                </a>
-                <!-- Delete: only rendered as visible for files uploaded from THIS browser (owner tag matches) -->
-                <button x-show="f.mine && delKey !== f.key" type="button" @click="delKey = f.key" dir="rtl" class="min-h-[44px] px-4 rounded-lg text-sm flex items-center justify-center gap-1.5 text-rose-300 border border-rose-400/30 hover:bg-rose-400/15 transition" aria-label="حذف الملف">
-                  <i data-lucide="trash-2" class="w-4 h-4"></i>حذف
-                </button>
-                <div x-show="f.mine && delKey === f.key" dir="rtl" class="w-full flex flex-wrap items-center gap-2">
-                  <span class="text-sm text-slate-300">متأكد إنك عايز تحذف الملف؟</span>
-                  <button type="button" @click="removeFile(f)" :disabled="deleting" class="min-h-[44px] px-4 rounded-lg bg-rose-500 text-white text-sm font-semibold disabled:opacity-60">نعم، احذف</button>
-                  <button type="button" @click="delKey = ''" class="min-h-[44px] px-3 rounded-lg bg-slate-700/50 text-sm">إلغاء</button>
-                </div>
-              </div>
-            </article>
-          </template>
-        </div>
-      </section>
+            </div>
+          </article>
+        </template>
+      </div>
+      </div>
       </div>
 
       <!-- Class wall -->
-      <section x-show="view==='wall'" dir="rtl" lang="ar" class="space-y-4 rise">
+      <section x-show="showWall" dir="rtl" lang="ar" class="space-y-4 rise">
         <div class="flex items-center gap-3">
           <div class="flex-1 min-w-0">
-            <h2 class="font-display font-bold text-white text-xl">منتدى الواجبات والملاحظات</h2>
-            <p class="text-sm text-slate-400 mt-0.5">اكتب واجب النهارده أو أي ملاحظة، وكل الفصل هيشوفها.</p>
+            <h2 class="font-display font-bold text-white text-xl" x-text="wallTitle"></h2>
+            <p class="text-sm text-slate-400 mt-0.5" x-text="view==='wall' ? 'هنا تقدر تسأل على اي حاجه انت عايزها 🥰' : 'اكتب واجب النهارده أو أي ملاحظة، وكل الفصل هيشوفها.'"></p>
           </div>
           <button @click="loadPosts()" class="shrink-0 w-11 h-11 grid place-items-center rounded-lg text-glow hover:bg-glow/15" aria-label="تحديث"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
         </div>
 
         <form @submit.prevent="post()" novalidate class="glass rounded-2xl p-4 space-y-3">
-          <input x-model="postName" @input="formError=''" :class="formError && !postName.trim() && 'ring-2 ring-rose-400/70'" dir="auto" maxlength="40" placeholder="اسم الطالب" class="w-full min-h-[44px] bg-ink/70 border border-slate-600/60 rounded-lg px-3 text-sm focus:border-glow outline-none">
+          <div class="flex items-center gap-2 min-h-[44px] bg-ink/50 border border-slate-600/40 rounded-lg px-3 text-sm text-slate-300" title="الاسم بيتحدد تلقائياً من حسابك ومينفعش يتغير">
+            <i data-lucide="lock" class="w-4 h-4 shrink-0 text-slate-400"></i><span class="shrink-0">هتنشر باسم:</span>
+            <span class="font-medium text-white truncate" dir="auto" x-text="authorLabel"></span>
+          </div>
           <textarea x-model="postText" @input="formError=''" :class="formError && !postText.trim() && 'ring-2 ring-rose-400/70'" dir="auto" rows="3" maxlength="1000" placeholder="اكتب الواجب أو الملاحظة هنا… (مثال: واجب الرياضيات صف 45)" class="w-full min-h-[96px] resize-y bg-ink/70 border border-slate-600/60 rounded-lg px-3 py-2.5 text-sm leading-7 focus:border-glow outline-none"></textarea>
           <p x-show="formError" role="alert" class="rounded-lg border border-amber-400/40 bg-amber-400/10 px-3 py-2 text-sm text-amber-100" x-text="formError"></p>
           <div class="flex items-center justify-between gap-3">
@@ -305,6 +357,35 @@
           </template>
         </ul>
       </section>
+
+      <!-- Student profile (read-only: official data comes from the school account list) -->
+      <section x-show="view==='profile' && authed" dir="rtl" lang="ar" class="space-y-4 rise">
+        <div class="flex items-center gap-3">
+          <h2 class="flex-1 min-w-0 font-display font-bold text-white text-xl">الملف الشخصي</h2>
+          <button type="button" @click="selectClass('')" class="shrink-0 min-h-[44px] px-4 rounded-lg bg-slate-700/50 hover:bg-slate-700 text-sm">رجوع للموقع</button>
+        </div>
+        <template x-if="profile">
+          <div class="glass rounded-2xl p-5 sm:p-6 space-y-5">
+            <div class="flex items-center gap-4">
+              <div class="w-16 h-16 shrink-0 rounded-full grid place-items-center text-2xl font-bold text-ink bg-gradient-to-br from-glow to-violet2" x-text="profile.full_name.trim().charAt(0).toUpperCase()"></div>
+              <div class="min-w-0">
+                <p class="font-display font-bold text-xl text-white truncate" dir="auto" x-text="profile.full_name"></p>
+                <p class="text-sm text-slate-400" x-text="'الفصل ' + profile.class_code"></p>
+              </div>
+            </div>
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+              <template x-for="row in profileRows" :key="row.label">
+                <div class="rounded-xl bg-ink/50 border border-slate-600/30 px-4 py-3 min-w-0">
+                  <dt class="text-xs text-slate-400" x-text="row.label"></dt>
+                  <dd class="mt-1 font-medium text-white break-words" dir="auto" x-text="row.value"></dd>
+                </div>
+              </template>
+            </dl>
+            <p class="flex items-start gap-2 text-xs text-slate-400 leading-6"><i data-lucide="lock" class="w-4 h-4 shrink-0 mt-0.5"></i>البيانات دي رسمية ومأخوذة من كشف الفصل، ومينفعش تتعدل من الموقع. اسمك ده اللي بيظهر تلقائياً على كل منشور بتكتبه.</p>
+            <button type="button" @click="logout()" class="min-h-[44px] px-5 rounded-xl border border-rose-400/40 text-rose-200 hover:bg-rose-400/15 text-sm font-semibold flex items-center gap-2"><i data-lucide="log-out" class="w-4 h-4"></i>تسجيل الخروج</button>
+          </div>
+        </template>
+      </section>
     </main>
   </div>
 </div>
@@ -330,67 +411,10 @@ const CONFIG = {
   BUCKET:            'user_2TA',               // Storage bucket name (must be PUBLIC)
   MAX_FILE_MB:       50                         // free Supabase plan caps files at 50 MB
 };
-/* Policies (SQL editor), using your bucket name:
-   create policy "2ta read"   on storage.objects for select using (bucket_id='user_2TA');
-   create policy "2ta upload" on storage.objects for insert with check (bucket_id='user_2TA');
-   create policy "2ta delete" on storage.objects for delete using (bucket_id='user_2TA');   -- NEW: required for the Delete button
-
-   Class wall — run this whole script once in the Supabase SQL editor (safe to re-run).
-   Reads are public; writes go ONLY through the three functions, which check a secret
-   token that never leaves the author's browser (only its SHA-256 hash is stored).
-
-   create table if not exists public.class_posts (
-     id uuid primary key default gen_random_uuid(),
-     author_name text not null check (char_length(author_name) between 1 and 40),
-     content text not null check (char_length(content) between 1 and 1000),
-     created_at timestamptz not null default now()
-   );
-   alter table public.class_posts add column if not exists owner_hash text;
-   alter table public.class_posts add column if not exists edited_at timestamptz;
-   create index if not exists class_posts_created_idx on public.class_posts (created_at desc);
-
-   alter table public.class_posts enable row level security;
-   drop policy if exists "class_posts read" on public.class_posts;
-   create policy "class_posts read" on public.class_posts for select to anon using (true);
-   drop policy if exists "class_posts insert" on public.class_posts;
-   revoke insert, update, delete on public.class_posts from anon, authenticated;
-
-   create or replace function public.create_post(p_name text, p_content text, p_token text)
-   returns public.class_posts language plpgsql security definer set search_path = public as $$
-   declare r public.class_posts;
-   begin
-     p_name := btrim(coalesce(p_name, '')); p_content := btrim(coalesce(p_content, ''));
-     if p_name = '' or p_content = '' then raise exception 'empty'; end if;
-     if length(coalesce(p_token, '')) < 20 then raise exception 'bad_token'; end if;
-     insert into public.class_posts (author_name, content, owner_hash)
-     values (p_name, p_content, encode(sha256(convert_to(p_token, 'UTF8')), 'hex'))
-     returning * into r;
-     return r;
-   end $$;
-
-   create or replace function public.edit_post(p_id uuid, p_content text, p_token text)
-   returns void language plpgsql security definer set search_path = public as $$
-   begin
-     p_content := btrim(coalesce(p_content, ''));
-     if p_content = '' then raise exception 'empty'; end if;
-     update public.class_posts set content = p_content, edited_at = now()
-      where id = p_id and owner_hash = encode(sha256(convert_to(coalesce(p_token, ''), 'UTF8')), 'hex');
-     if not found then raise exception 'not_allowed'; end if;
-   end $$;
-
-   create or replace function public.delete_post(p_id uuid, p_token text)
-   returns void language plpgsql security definer set search_path = public as $$
-   begin
-     delete from public.class_posts
-      where id = p_id and owner_hash = encode(sha256(convert_to(coalesce(p_token, ''), 'UTF8')), 'hex');
-     if not found then raise exception 'not_allowed'; end if;
-   end $$;
-
-   grant execute on function public.create_post(text, text, text), public.edit_post(uuid, text, text),
-     public.delete_post(uuid, text) to anon, authenticated;
-
-   do $$ begin alter publication supabase_realtime add table public.class_posts;
-   exception when duplicate_object then null; end $$; */
+/* Accounts: run supabase/migrations/006_student_accounts.sql, then scripts/seed_students.py (see README_ACCOUNTS.md) BEFORE deploying this file.
+   Database setup: run supabase/migrations/001_2iti_structure.sql in the Supabase SQL editor,
+   (optionally) 002_legacy_files_template.sql for old files, and deploy supabase/functions/delete-file.
+   The wall (class_posts) is unchanged and still needs its original SQL if not already installed. */
 
 const configured = /^https:\/\/.+\.supabase\.co/.test(CONFIG.SUPABASE_URL) &&
                    CONFIG.SUPABASE_ANON_KEY.length > 40 && !CONFIG.SUPABASE_ANON_KEY.startsWith('YOUR_');
@@ -412,7 +436,26 @@ const dec = (s, raw) => {
     return new TextDecoder().decode(Uint8Array.from(b, c => c.charCodeAt(0)));
   } catch { return s; }
 };
-const readMine = () => { try { return JSON.parse(localStorage.getItem('2ta_mine')) || {}; } catch (e) { return {}; } };   // { postId: secret token }
+/* ---- Accounts ----
+   Students sign in with Supabase Auth. The login form takes the Excel username; it is mapped to a
+   synthetic e-mail that exists only inside Supabase Auth (scripts/seed_students.py creates the same one).
+   No credential, and no copy of the Excel file, is ever shipped to the browser. */
+const EMAIL_DOMAIN = 'students.2iti.invalid';
+const usernameToEmail = u => u.trim().toLowerCase() + '@' + EMAIL_DOMAIN;
+const lsGet = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+/* Edit/delete tokens are kept per account, so two students sharing one browser never see each other's controls.
+   Tokens written before accounts existed are handed once to the first account that signs in on this browser. */
+const adoptLegacy = uid => {
+  try {
+    if (localStorage.getItem('2iti_legacy_owner')) return;
+    localStorage.setItem('2iti_legacy_owner', uid);
+    for (const [old, nu] of [['2ta_mine', '2ta_mine:'], ['2iti_files', '2iti_files:']]) {
+      const v = localStorage.getItem(old); if (v) { localStorage.setItem(nu + uid, v); localStorage.removeItem(old); }
+    }
+  } catch (e) {}
+};
+const readMine = uid => lsGet('2ta_mine:' + uid, {});   // { postId: secret token }
 /* Anonymous owner identity: a random id lives only in this browser's localStorage.
    Files get a public, non-reversible TAG derived from it (first 8 bytes of SHA-256) in their storage name,
    so the raw id is never exposed. A file is "mine" when its tag matches this browser's tag. */
@@ -423,7 +466,8 @@ const getUid = () => {
     return u;
   } catch (e) { return ''; }
 };
-const getOwnerTag = async () => {
+const getOwnerTag = async userId => {   // legacy anonymous tag belongs only to the account that adopted this browser
+  try { if (localStorage.getItem('2iti_legacy_owner') !== userId) return ''; } catch (e) { return ''; }
   const uid = getUid(); if (!uid) return '';
   try {
     const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(uid));
@@ -434,48 +478,144 @@ const getOwnerTag = async () => {
     return a.toString(16).padStart(8, '0') + b.toString(16).padStart(8, '0');
   }
 };
+/* Single source of truth for the hierarchy: 3 classes x 2 categories x 15 subjects = 90 locations.
+   `id` values are ASCII (used in storage paths and database columns); `name` is what users see. */
+const CLASSES = ['2TA', '2TB', '2TC'];
+const CATEGORIES = [
+  { id: 'class_notes', name: 'ما كتب في الحصة', icon: 'notebook-pen' },
+  { id: 'summaries',   name: 'الملخصات',        icon: 'file-text' },
+  { id: 'homework_notes', name: 'الواجبات والملاحظات', icon: 'clipboard-list' }
+];
+const SUBJECTS = [
+  { id: 'biology', name: 'Biology' }, { id: 'chemistry', name: 'Chemistry' }, { id: 'disegno', name: 'Disegno' },
+  { id: 'economia', name: 'Economia' }, { id: 'educazione_civica', name: 'Educazione Civica' }, { id: 'english', name: 'English' },
+  { id: 'fisica', name: 'Fisica' }, { id: 'ginnastica', name: 'Ginnastica' }, { id: 'informatica', name: 'Informatica' },
+  { id: 'italiano', name: 'Italiano' }, { id: 'matematica', name: 'Matematica' }, { id: 'sistemi', name: 'Sistemi' },
+  { id: 'storia', name: 'Storia' }, { id: 'tecnologia', name: 'Tecnologia' }, { id: 'arabic', name: 'عربي' }
+];
+const randHex = n => Array.from(crypto.getRandomValues(new Uint8Array(n)), b => b.toString(16).padStart(2, '0')).join('');
+const readMineFiles = uid => lsGet('2iti_files:' + uid, {});   // { fileId: secret token }
 const cmp = (a, b) => dec(a).localeCompare(dec(b));
 const SYNC_MS = 15000;   // how often the site re-checks Supabase for added/removed groups, folders and files
 
 function twota() {
   return {
-    CONFIG, demo: !configured, syncOk: true, syncing: false, busy: false,
-    groups: [], active: '', folder: '', folders: [], files: [], search: '', error: '',
-    queue: [], uploading: false, done: 0, total: 0, loading: false, groupsLoading: true, refreshing: false,
-    drag: false, delKey: '', deleting: false, ownerTag: '',
-    view: 'files', posts: [], postsLoading: false, postsError: '', postName: '', postText: '', posting: false, lastPost: 0, wallLoaded: false,
+    CONFIG, CLASSES, CATEGORIES, SUBJECTS, demo: !configured, syncOk: true, syncing: false, busy: false,
+    active: '', cat: '', subj: '', files: [], search: '', error: '',
+    queue: [], uploading: false, done: 0, total: 0, loading: false, refreshing: false,
+    drag: false, delKey: '', deleting: false, ownerTag: '', mineFiles: {}, uploaderName: '',
+    view: 'files', postsScope: '', posts: [], postsLoading: false, postsError: '', postName: '', postText: '', posting: false, lastPost: 0, wallLoaded: false,
     mine: {}, formError: '', editId: '', editText: '', editError: '', savingEdit: false, delId: '',
     toasts: [], memory: {}, cache: {}, req: 0,
-    // Fixed folders used only in demo mode (with Supabase, groups/folders come from Storage)
-    memFolders: { General_Notes: ['Lectures'], Math: ['Homework'], Physics: ['Homework'], Exams: ['Midterm'] },
+    ready: false, profile: null, loginUser: '', loginPass: '', showPass: false, loggingIn: false, loginError: '', fails: 0, lockUntil: 0,
 
     async init() {
       if (configured) { try { sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY); } catch (e) { console.error('Supabase init failed:', e); } }
       this.demo = !sb;
-      this.mine = readMine();
-      this.ownerTag = await getOwnerTag();
+      window.addEventListener('online', () => this.retryPendingNotifies());
       let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => lucide.createIcons(), 40); })
         .observe(document.body, { childList: true, subtree: true });
       lucide.createIcons();
-
-      // Supabase is the single source of truth: nothing about groups/folders is cached locally
-      if (sb) await this.syncGroups(false); else this.groups = ['General_Notes', 'Math', 'Physics', 'Exams'];
-      this.groupsLoading = false;
-      this.active = this.groups[0] || '';
-      await this.loadFiles();
-      if (sb) {   // Storage has no push events, so poll while the tab is visible + re-check on focus
+      if (sb) {   // no push events for this list, so poll while the tab is visible + re-check on focus
         const go = () => this.sync();
         setInterval(go, SYNC_MS);
         document.addEventListener('visibilitychange', go);
         window.addEventListener('focus', go);
         window.addEventListener('online', go);
-      }
+        // session ended elsewhere (other tab, expired refresh token): drop all private state
+        sb.auth.onAuthStateChange(ev => { if (ev === 'SIGNED_OUT') setTimeout(() => this.clearSession(), 0); });
+        try {
+          const { data } = await sb.auth.getSession();
+          if (data && data.session) await this.startSession(data.session.user);
+        } catch (e) { console.error('Session restore failed:', e); }
+      } else await this.startSession(null);   // demo mode (no Supabase configured): no accounts
+      this.ready = true;
     },
 
+    /* ---------- accounts ---------- */
+    get authed() { return !!this.profile || this.demo; },
+    get uid() { return this.profile ? this.profile.id : 'demo'; },
+    get authorLabel() { return this.profile ? this.profile.full_name : (this.demo ? 'Demo' : ''); },
+    get greeting() {   // name + gender come from the account record, never from user input
+      const p = this.profile; if (!p) return '';
+      const first = p.first_name || (p.full_name || '').trim().split(/\s+/)[0];
+      return (p.gender === 'female' ? 'أهلاً بيكي يا ' : 'أهلاً بيك يا ') + first + ' ❤️';
+    },
+    get profileRows() {
+      const p = this.profile; if (!p) return [];
+      return [
+        { label: 'الاسم الكامل', value: p.full_name },
+        { label: 'اسم المستخدم', value: p.username },
+        { label: 'الفصل', value: p.class_code },
+        { label: 'النوع', value: p.gender === 'female' ? 'مؤنث' : 'مذكر' },
+        { label: 'رقم الطالب (داخل الفصل)', value: String(p.student_number) }
+      ];
+    },
+    async startSession(user) {
+      if (sb && user) {
+        const { data, error } = await sb.from('students').select('id,student_number,class_code,username,full_name,first_name,gender').eq('id', user.id).maybeSingle();
+        if (error || !data) {
+          try { await sb.auth.signOut(); } catch (e) {}
+          this.loginError = error ? 'مشكلة في تحميل بيانات الحساب. حاول تاني.' : 'الحساب ده مش مفعّل كحساب طالب. كلّم المسؤول.';
+          return false;
+        }
+        this.profile = data; this.uploaderName = data.full_name;
+      }
+      adoptLegacy(this.uid);
+      this.mine = readMine(this.uid); this.mineFiles = readMineFiles(this.uid);
+      this.ownerTag = await getOwnerTag(this.uid);
+      this.retryPendingNotifies();
+      return true;
+    },
+    async login() {
+      if (this.loggingIn || !sb) return;
+      const u = this.loginUser.trim(), pw = this.loginPass;
+      if (!u || !pw) { this.loginError = 'اكتب اسم المستخدم وكلمة المرور.'; return; }
+      const wait = this.lockUntil - Date.now();
+      if (wait > 0) { this.loginError = `محاولات كتير غلط. استنى ${Math.ceil(wait / 1000)} ثانية وجرّب تاني.`; return; }
+      this.loggingIn = true; this.loginError = '';
+      try {
+        const { data, error } = await sb.auth.signInWithPassword({ email: usernameToEmail(u), password: pw });
+        if (error || !data || !data.user) {
+          const m = (error?.message || '').toLowerCase();
+          if (m.includes('fetch') || m.includes('network')) this.loginError = 'مشكلة في الاتصال بالإنترنت. حاول تاني.';
+          else {
+            if (++this.fails >= 5) { this.lockUntil = Date.now() + 30000; this.fails = 0; }
+            this.loginError = 'اسم المستخدم أو كلمة المرور غلط.';   // same message for both, so usernames can't be probed
+          }
+          return;
+        }
+        this.fails = 0;
+        if (await this.startSession(data.user)) {
+          this.loginUser = ''; this.loginPass = ''; this.showPass = false;
+          this.view = 'files'; this.active = ''; this.cat = ''; this.subj = '';
+          this.toast(this.greeting);
+        }
+      } finally { this.loggingIn = false; }
+    },
+    async logout() {
+      if (sb) { try { await sb.auth.signOut(); } catch (e) { console.error(e); } }
+      this.clearSession();
+      this.toast('تم تسجيل الخروج.');
+    },
+    clearSession() {
+      this.profile = null; this.mine = {}; this.mineFiles = {}; this.ownerTag = ''; this.uploaderName = '';
+      this.posts = []; this.files = []; this.cache = {}; this.queue = []; this.req++;
+      this.active = ''; this.cat = ''; this.subj = ''; this.view = 'files';
+      this.wallLoaded = false; this.postsScope = ''; this.postText = ''; this.editId = ''; this.delId = '';
+      if (wallChannel && sb) { try { sb.removeChannel(wallChannel); } catch (e) {} }
+      wallChannel = null;
+    },
+    openProfile() { if (this.profile) this.view = 'profile'; },
+
     /* ---------- helpers ---------- */
-    pretty: s => dec(s),
-    path() { return this.folder ? `${this.active}/${this.folder}` : this.active; },
-    get location() { return this.active ? dec(this.active) + (this.folder ? ' / ' + dec(this.folder) : '') : ''; },
+    path() { return `${this.active}/${this.cat}/${this.subj}`; },
+    get showWall() { return this.view === 'wall' || (this.view === 'files' && !!this.active && this.cat === 'homework_notes'); },
+    get wallClass() { return this.view === 'wall' ? '' : this.active; },   // '' = original shared wall (posts without a class)
+    get wallTitle() { return this.view === 'wall' ? 'مجتمع سيكوندا' : 'الواجبات والملاحظات — ' + this.active; },
+    get catName() { return (CATEGORIES.find(c => c.id === this.cat) || {}).name || ''; },
+    get subjName() { return (SUBJECTS.find(s => s.id === this.subj) || {}).name || ''; },
+    get location() { return this.subj ? `${this.active} / ${this.catName} / ${this.subjName}` : ''; },
     fmtSize(b) {
       if (!b && b !== 0) return '—';
       const u = ['B', 'KB', 'MB', 'GB']; let i = 0;
@@ -493,141 +633,100 @@ function twota() {
       this.toasts.push({ id, msg, type });
       setTimeout(() => this.toasts = this.toasts.filter(t => t.id !== id), 4500);
     },
-    // Storage key for an uploaded file: timestamp + encoded base name + clean extension
-    // New key format: <timestamp>-<encoded display name>@<owner tag><original extension>
-    // (legacy files use "_" after the timestamp and keep showing their old names)
-    fileKey(name, title) {
-      const i = name.lastIndexOf('.');
-      const ext = i > 0 ? name.slice(i).replace(/[^\w.]/g, '').slice(0, 12) : '';
-      return `${Date.now()}-${enc(title.trim().slice(0, 80)) || 'file'}${this.ownerTag ? '@' + this.ownerTag : ''}${ext}`;
-    },
-    fileMeta(stored) {
-      const m = stored.match(/^(\d{10,})([_-])(.*)$/), rest = m ? m[3] : stored;
-      const i = rest.lastIndexOf('.'), base = i > 0 ? rest.slice(0, i) : rest, ext = i > 0 ? rest.slice(i) : '';
-      const om = base.match(/^(.*)@([0-9a-f]{16})$/), owner = om ? om[2] : '';   // legacy files have no owner tag
-      const text = dec(om ? om[1] : base, true);
-      return { title: m && m[2] === '-' ? text : text + ext, name: text + ext, ext: ext.slice(1).toLowerCase(), owner };
-    },
-    mergeFolders(remote) {
-      return [...new Set([...(this.demo ? this.memFolders[this.active] || [] : []), ...remote])].sort(cmp);
-    },
     get filtered() {
       const q = this.search.trim().toLowerCase();
       return q ? this.files.filter(f => f.title.toLowerCase().includes(q)) : this.files;
     },
-    get filteredFolders() {
-      const q = this.search.trim().toLowerCase();
-      return q ? this.folders.filter(f => dec(f).toLowerCase().includes(q)) : this.folders;
-    },
+    reset() { this.search = ''; this.queue = []; this.delKey = ''; this.files = []; this.error = ''; this.loading = false; this.req++; },
 
-    /* ---------- live sync (Supabase is the source of truth) ---------- */
-    async syncGroups(silent) {
-      const { data, error } = await sb.storage.from(CONFIG.BUCKET).list('', { limit: 500 });
-      if (error) { this.syncOk = false; if (!silent) this.error = this.explain(error); return false; }
-      this.syncOk = true;
-      const g = data.filter(x => x.id === null).map(x => x.name).sort(cmp);   // folders have no id
-      if (g.join('|') !== this.groups.join('|')) this.groups = g;
-      return true;
-    },
+    /* ---------- navigation: class -> category -> subject ---------- */
+    async selectClass(c) { this.view = 'files'; this.active = c; this.cat = ''; this.subj = ''; this.reset(); },
+    async selectCat(c) { this.view = 'files'; this.cat = c; this.subj = ''; this.reset(); if (c === 'homework_notes') await this.switchWall(); },
+    async selectSubj(s) { this.view = 'files'; this.subj = s; this.reset(); await this.loadFiles(); },
+    goUp() { if (this.subj) this.selectCat(this.cat); else if (this.cat) this.selectClass(this.active); else this.selectClass(''); },
+
     async sync() {
-      if (!sb || document.hidden || this.uploading || this.deleting || this.syncing || this.busy) return;
+      if (!sb || !this.profile || document.hidden || this.uploading || this.deleting || this.syncing || this.busy) return;
       this.syncing = true;
       try {
-        if (this.view === 'wall') await this.loadPosts(true);   // fallback if Realtime isn't enabled
-        if (!(await this.syncGroups(true))) return;
-        if (this.active && !this.groups.includes(this.active)) {
-          this.toast('This group was removed.', 'error'); this.active = this.groups[0] || ''; this.folder = '';
-        } else if (!this.active && this.groups.length) this.active = this.groups[0];
-        await this.loadFiles(true);
+        if (this.showWall) await this.loadPosts(true);
+        else if (this.subj) await this.loadFiles(true);
       } finally { this.syncing = false; }
     },
 
-    /* ---------- groups ---------- */
-    async selectGroup(g) {
-      this.view = 'files'; this.active = g; this.folder = ''; this.search = ''; this.queue = []; this.delKey = '';
-      await this.loadFiles();
-    },
-
-    /* ---------- folders (inside a group; the only place files can live) ---------- */
-    async openFolder(f) {
-      if (this.folder === f) return;
-      this.folder = f; this.search = ''; this.queue = []; this.delKey = '';
-      await this.loadFiles();
-    },
-    /* ---------- files ---------- */
-    // silent = background sync: no spinners, no error banner, never cancels a user navigation
+    /* ---------- files: always filtered by class + category + subject ---------- */
     async loadFiles(silent = false) {
-      if (!this.active) { this.files = []; this.folders = []; this.loading = false; return; }
+      if (!this.active || !this.cat || !this.subj) { this.files = []; this.loading = false; return; }
       const path = this.path(), token = silent ? this.req : ++this.req, hit = this.cache[path];
-      if (!silent) { this.error = ''; if (hit) { this.files = hit.files; this.folders = hit.folders; } }
-      if (!sb) { this.files = this.memory[path] || []; this.folders = this.folder ? [] : this.mergeFolders([]); return; }
+      if (!silent) { this.error = ''; if (hit) this.files = hit; }
+      if (!sb) { this.files = this.memory[path] || []; return; }
       if (!silent) this.loading = !hit;
-      const { data, error } = await sb.storage.from(CONFIG.BUCKET)
-        .list(path, { limit: 500, sortBy: { column: 'created_at', order: 'desc' } });
+      const base = 'id,title,original_name,ext,size_bytes,storage_path,owner_tag,owner_hash,created_at';
+      const run = cols => sb.from('class_files').select(cols)
+        .eq('class_code', this.active).eq('category_code', this.cat).eq('subject_code', this.subj)
+        .order('created_at', { ascending: false }).limit(500);
+      let { data, error } = await run(base + ',uploader_name');
+      if (error && (error.code === '42703' || /uploader_name/i.test(error.message || ''))) ({ data, error } = await run(base));   // migration 006 not applied yet
       if (token !== this.req || path !== this.path()) return;   // user navigated elsewhere meanwhile
       this.loading = false;
       if (error) { this.syncOk = false; if (!silent) { this.files = []; this.error = this.explain(error); } return; }
       this.syncOk = true;
-      if (silent && this.folder && !data.length) {              // folder (and its placeholder) was deleted remotely
-        this.toast('This folder was removed.', 'error'); delete this.cache[path]; this.folder = '';
-        return this.loadFiles();
-      }
       const bucket = sb.storage.from(CONFIG.BUCKET);
-      const files = data.filter(x => x.id && !x.name.startsWith('.')   /* hide .keep and Supabase's .emptyFolderPlaceholder */).map(x => {
-        const key = `${path}/${x.name}`, m = this.fileMeta(x.name);
-        return { key, title: m.title, name: m.name, ext: m.ext, size: x.metadata?.size, date: x.created_at,
-          mine: !!this.ownerTag && m.owner === this.ownerTag,
-          url: bucket.getPublicUrl(key, { download: m.name }).data.publicUrl };
-      });
-      const folders = this.folder ? [] : this.mergeFolders(data.filter(x => x.id === null).map(x => x.name));
-      this.cache[path] = { files, folders };
-      this.files = files; this.folders = folders;
+      const files = data.map(x => ({
+        key: x.id, by: x.uploader_name || '', title: x.title, name: x.original_name, ext: x.ext || '', size: x.size_bytes, date: x.created_at,
+        // own upload (secret token kept in this browser), or a migrated legacy file tagged with this browser's old owner tag
+        mine: !!this.mineFiles[x.id] || (!x.owner_hash && !!x.owner_tag && x.owner_tag === this.ownerTag),
+        url: bucket.getPublicUrl(x.storage_path, { download: x.original_name }).data.publicUrl
+      }));
+      this.cache[path] = files; this.files = files;
     },
-    async refresh() {   // Refresh button and "Try again"
-      if (this.refreshing) return;
+    async refresh() {
+      if (this.refreshing || !this.subj) return;
       this.refreshing = true; this.error = '';
-      try {
-        if (sb && !(await this.syncGroups(false))) return;
-        if (!this.groups.includes(this.active)) { this.active = this.groups[0] || ''; this.folder = ''; }
-        delete this.cache[this.path()];
-        await this.loadFiles();
-        if (!this.error) this.toast('Up to date.');
-      } finally { this.refreshing = false; }
+      try { delete this.cache[this.path()]; await this.loadFiles(); if (!this.error) this.toast('Up to date.'); }
+      finally { this.refreshing = false; }
     },
     openPicker() {
       this.view = 'files';
-      if (!this.folder) return this.toast('Open a folder first. Files can only be uploaded inside a folder.', 'error');
+      if (!this.subj) return this.toast('Choose a class, category and subject first.', 'error');
       this.$refs.picker.click();
     },
     pick(list) {
-      if (!this.folder) return this.toast('Open a folder first. Files can only be uploaded inside a folder.', 'error');
+      if (!this.subj) return this.toast('Choose a class, category and subject first.', 'error');
       const max = CONFIG.MAX_FILE_MB * 1048576;
       const files = Array.from(list || []);
       if (!files.length) return this.toast('No file selected.', 'error');
       for (const f of files) {
         if (f.size === 0) this.toast(`"${f.name}" is empty and was skipped.`, 'error');
         else if (f.size > max) this.toast(`"${f.name}" is over ${CONFIG.MAX_FILE_MB} MB.`, 'error');
-        else this.queue.push({ id: Date.now() + Math.random(), file: f, title: f.name.replace(/\.[^.]*$/, '').slice(0, 80) });  // title pre-filled, editable
+        else this.queue.push({ id: Date.now() + Math.random(), file: f, title: f.name.replace(/\.[^.]*$/, '').slice(0, 80) });
       }
     },
     async upload() {
-      // Enforced here too, not just in the UI: no uploads at group level
-      if (!this.active || !this.folder) return this.toast('Open a folder inside a group to upload.', 'error');
+      if (!this.active || !this.cat || !this.subj) return this.toast('Choose a class, category and subject first.', 'error');
       if (!this.queue.length) return this.toast('Choose at least one file.', 'error');
       if (this.queue.some(q => !q.title.trim())) return this.toast('Type a display name for every file.', 'error');
+      if (!this.authed) return this.toast('سجّل دخول الأول.', 'error');
       this.uploading = true; this.done = 0; this.total = this.queue.length;
-      const path = this.path(); let ok = 0;
+      const path = this.path(), cls = this.active, cat = this.cat, subj = this.subj; let ok = 0;
       for (const q of this.queue) {
-        const f = q.file;
+        const f = q.file, title = q.title.trim();
+        const i = f.name.lastIndexOf('.'), ext = i > 0 ? f.name.slice(i).replace(/[^\w.]/g, '').slice(0, 12) : '';
         try {
           if (sb) {
-            const { error } = await sb.storage.from(CONFIG.BUCKET).upload(`${path}/${this.fileKey(f.name, q.title)}`, f,
-              { contentType: f.type || 'application/octet-stream', upsert: false });
+            const storagePath = `${path}/${Date.now()}-${randHex(4)}${ext}`, token = randHex(16);
+            const up = await sb.storage.from(CONFIG.BUCKET).upload(storagePath, f, { contentType: f.type || 'application/octet-stream', upsert: false });
+            if (up.error) throw up.error;
+            const { data, error } = await sb.rpc('register_file', { p_class: cls, p_category: cat, p_subject: subj, p_title: title,
+              p_name: title + ext, p_size: f.size, p_path: storagePath, p_token: token });
             if (error) throw error;
+            const row = Array.isArray(data) ? data[0] : data;
+            this.mineFiles = { ...this.mineFiles, [row.id]: token };
+            lsSet('2iti_files:' + this.uid, this.mineFiles);
+            this.notifyTelegram(row.id, this.profile ? this.profile.full_name : '');   // fire-and-forget: never affects the upload result
           } else {   // demo mode
-            const ext = f.name.includes('.') ? f.name.split('.').pop().toLowerCase() : '';
-            (this.memory[path] ||= []).unshift({ key: crypto.randomUUID(), title: q.title.trim(), name: q.title.trim() + (ext ? '.' + ext : ''),
-              size: f.size, date: new Date().toISOString(), ext, mine: true, url: URL.createObjectURL(f) });
+            (this.memory[path] ||= []).unshift({ key: crypto.randomUUID(), title, name: title + ext, size: f.size,
+              date: new Date().toISOString(), ext: ext.slice(1).toLowerCase(), mine: true, url: URL.createObjectURL(f) });
           }
           ok++;
         } catch (e) { this.toast(`"${q.title}" failed: ${this.explain(e)}`, 'error'); }
@@ -636,56 +735,85 @@ function twota() {
       this.uploading = false; this.queue = [];
       if (ok) this.toast(`${ok} file${ok > 1 ? 's' : ''} uploaded.`);
       delete this.cache[path];
-      await this.loadFiles();
+      if (path === this.path()) await this.loadFiles();
+    },
+
+    /* ---------- Telegram notification (server does all the work; the browser only says "file X was registered") ---------- */
+    async notifyTelegram(id, name) {
+      if (!sb || !id) return;
+      const pend = () => { try { return JSON.parse(localStorage.getItem('2iti_notify') || '{}'); } catch (e) { return {}; } };
+      const save = o => { try { localStorage.setItem('2iti_notify', JSON.stringify(o)); } catch (e) {} };
+      try {
+        const { data, error } = await sb.functions.invoke('notify-telegram', { body: { file_id: id, uploader_name: name } });
+        const st = data && data.status;
+        if (!error && (st === 'sent' || st === 'expired' || st === 'not_found' || st === 'invalid_record')) {
+          const p = pend(); delete p[id]; save(p);          // done (or can never succeed): stop retrying
+        } else { const p = pend(); p[id] = { name, t: Date.now() }; save(p); }   // network problem / Telegram down: retry later
+      } catch (e) { const p = pend(); p[id] = { name, t: Date.now() }; save(p); }
+    },
+    retryPendingNotifies() {
+      if (!sb || !this.profile) return;
+      let p = {}; try { p = JSON.parse(localStorage.getItem('2iti_notify') || '{}'); } catch (e) {}
+      const keep = {};
+      for (const [id, v] of Object.entries(p)) if (Date.now() - v.t < 25 * 60000) keep[id] = v;   // server only accepts files < 30 min old
+      try { localStorage.setItem('2iti_notify', JSON.stringify(keep)); } catch (e) {}
+      for (const [id, v] of Object.entries(keep)) this.notifyTelegram(id, v.name);
     },
 
     async removeFile(f) {
-      if (!f.mine || this.deleting) return;   // only the uploader's browser may delete
+      if (!f.mine || this.deleting) return;
       this.deleting = true; this.delKey = '';
       const path = this.path();
       try {
-        if (sb) {
-          const { data, error } = await sb.storage.from(CONFIG.BUCKET).remove([f.key]);
-          if (error) throw error;
-          // Storage returns an empty list (no error) when RLS blocks the delete
-          if (!data || !data.length) throw new Error('delete_blocked');
+        if (sb) {   // authorization is checked on the server (Edge Function), not just by hiding the button
+          const { data, error } = await sb.functions.invoke('delete-file', { body: { id: f.key, token: this.mineFiles[f.key] || '', owner_tag: this.ownerTag } });
+          if (error || (data && data.error)) throw new Error((data && data.error) || error.message || 'delete_blocked');
+          const { [f.key]: _g, ...rest } = this.mineFiles; this.mineFiles = rest;
+          lsSet('2iti_files:' + this.uid, rest);
         } else this.memory[path] = (this.memory[path] || []).filter(x => x.key !== f.key);
-        this.files = this.files.filter(x => x.key !== f.key);   // update the list immediately
+        this.files = this.files.filter(x => x.key !== f.key);
         delete this.cache[path];
         this.toast('تم حذف الملف.');
       } catch (e) { this.toast(`Could not delete "${f.title}": ${this.explain(e)}`, 'error'); }
       finally { this.deleting = false; }
     },
 
+
     /* ---------- class wall (table: class_posts) ---------- */
-    async openWall() {
-      this.view = 'wall';
-      if (!this.postName) { try { this.postName = localStorage.getItem('2ta_name') || ''; } catch (e) {} }
+    async openWall() { this.view = 'wall'; await this.switchWall(); },
+    async switchWall() {   // same forum, scoped to the original wall or to one class
+      const scope = this.wallClass || 'legacy';
+      if (scope !== this.postsScope) { this.posts = []; this.wallLoaded = false; this.postsError = ''; this.postsScope = scope; this.editId = ''; this.delId = ''; }
       if (!this.wallLoaded) await this.loadPosts();
       this.subscribeWall();
     },
     async loadPosts(silent = false) {
       if (!sb) { this.wallLoaded = true; return; }             // demo mode: posts live in memory only
+      const scope = this.wallClass || 'legacy';
       if (!silent) { this.postsLoading = !this.posts.length; this.postsError = ''; }
-      const { data, error } = await sb.from('class_posts').select('id,author_name,content,created_at,edited_at')
-        .order('created_at', { ascending: false }).limit(100);   // newest first
+      let q = sb.from('class_posts').select('id,author_name,content,created_at,edited_at,class_code');
+      q = scope === 'legacy' ? q.is('class_code', null) : q.eq('class_code', scope);
+      const { data, error } = await q.order('created_at', { ascending: false }).limit(100);   // newest first
+      if (scope !== (this.wallClass || 'legacy')) return;       // user switched class meanwhile
       this.postsLoading = false;
       if (error) { if (!silent) this.postsError = this.explainPosts(error); return; }
       this.posts = data; this.wallLoaded = true;
     },
-    subscribeWall() {   // live inserts/deletes pushed by Supabase Realtime
+    subscribeWall() {   // live inserts/updates/deletes pushed by Supabase Realtime
       if (!sb || wallChannel) return;
       wallChannel = sb.channel('class_posts_feed')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'class_posts' }, p => {
-          if (p.eventType === 'INSERT' && !this.posts.some(x => x.id === p.new.id)) this.posts = [p.new, ...this.posts].slice(0, 100);
+          const want = this.wallClass || 'legacy';
+          if (p.eventType === 'INSERT' && (p.new.class_code || 'legacy') === want && !this.posts.some(x => x.id === p.new.id)) this.posts = [p.new, ...this.posts].slice(0, 100);
           else if (p.eventType === 'UPDATE') this.posts = this.posts.map(x => x.id === p.new.id ? { ...x, content: p.new.content, edited_at: p.new.edited_at } : x);
           else if (p.eventType === 'DELETE') this.posts = this.posts.filter(x => x.id !== p.old.id);
         }).subscribe();
     },
     async post() {
       if (this.posting) return;
-      const name = this.postName.trim(), text = this.postText.trim();
-      if (!name || !text) { this.formError = 'عفواً، يجب كتابة الاسم ومحتوى المنشور أولاً!'; return; }   // no empty posts
+      const name = this.authorLabel, text = this.postText.trim();   // author name = official account name, never typed
+      if (!this.authed || !name) { this.formError = 'لازم تسجل دخول الأول.'; return; }
+      if (!text) { this.formError = 'عفواً، يجب كتابة محتوى المنشور أولاً!'; return; }   // no empty posts
       const wait = 10000 - (Date.now() - this.lastPost);        // light anti-spam cooldown
       if (wait > 0) { this.formError = `استنى ${Math.ceil(wait / 1000)} ثواني قبل النشر مرة تانية.`; return; }
       this.formError = ''; this.posting = true;
@@ -694,12 +822,12 @@ function twota() {
       try {
         let row;
         if (sb) {
-          const { data, error } = await sb.rpc('create_post', { p_name: name, p_content: text, p_token: token });
+          const { data, error } = await sb.rpc('create_post', { p_name: name, p_content: text, p_token: token, p_class: this.wallClass || null });
           if (error) return this.formError = this.explainPosts(error);
           row = Array.isArray(data) ? data[0] : data;
         } else row = { id: crypto.randomUUID(), author_name: name, content: text, created_at: new Date().toISOString() };
         this.mine = { ...this.mine, [row.id]: token };
-        try { localStorage.setItem('2ta_mine', JSON.stringify(this.mine)); localStorage.setItem('2ta_name', name); } catch (e) {}
+        lsSet('2ta_mine:' + this.uid, this.mine);
         if (!this.posts.some(x => x.id === row.id)) this.posts = [row, ...this.posts];   // Realtime may have added it already
         this.postText = ''; this.lastPost = Date.now();
         this.toast('تم النشر ✅');
@@ -731,7 +859,7 @@ function twota() {
         }
       }
       const { [p.id]: _gone, ...rest } = this.mine; this.mine = rest;
-      try { localStorage.setItem('2ta_mine', JSON.stringify(rest)); } catch (e) {}
+      lsSet('2ta_mine:' + this.uid, rest);
       this.toast('تم حذف المنشور.');
     },
     ago(d) {
@@ -746,7 +874,9 @@ function twota() {
       const m = (e?.message || '').toLowerCase();
       if (e?.code === 'PGRST205' || e?.code === '42P01' || m.includes('class_posts') && (m.includes('not exist') || m.includes('schema cache'))) return 'جدول class_posts مش موجود. شغّل كود SQL اللي في تعليق CONFIG.';
       if (e?.code === 'PGRST202' || m.includes('could not find the function')) return 'دوال النشر مش موجودة. شغّل كود SQL الجديد اللي في تعليق CONFIG.';
+      if (e?.code === '42703' || m.includes('class_code') || m.includes('p_class')) return 'Run supabase/migrations/005_class_forums.sql first.';
       if (m.includes('not_allowed')) return 'مش مسموح لك تعدّل أو تحذف المنشور ده. (متاح بس من نفس المتصفح اللي نشرته منه)';
+      if (m.includes('not_a_student')) return 'حسابك مش مسجل كطالب. كلّم المسؤول.';
       if (m.includes('empty')) return 'عفواً، يجب كتابة الاسم ومحتوى المنشور أولاً!';
       if (m.includes('row-level security')) return 'مفيش صلاحية قراءة. تأكد من سياسة select لـ anon.';
       if (m.includes('check constraint')) return 'الاسم أو النص أطول من المسموح.';
@@ -756,8 +886,10 @@ function twota() {
     explain(e) {
       const m = (e?.message || String(e)).toLowerCase();
       if (m.includes('bucket not found')) return `Bucket "${CONFIG.BUCKET}" doesn't exist. Create it in Supabase → Storage.`;
-      if (m.includes('row-level security') || m.includes('not authorized') || m.includes('unauthorized')) return 'Permission denied. Add the storage policies from the CONFIG comment.';
-      if (m.includes('delete_blocked')) return 'Supabase refused the delete. Add the "2ta delete" policy from the CONFIG comment.';
+      if (m.includes('object_missing') || m.includes('bad_path')) return 'Upload did not register. Re-run migration 001 and try again.';
+      if (e?.code === 'PGRST202' || e?.code === 'PGRST205' || m.includes('class_files')) return 'Run supabase/migrations/001_2iti_structure.sql first.';
+      if (m.includes('row-level security') || m.includes('not authorized') || m.includes('unauthorized')) return 'Permission denied. Add the storage policies from the CONFIG comment, and make sure supabase/migrations/006_student_accounts.sql was run (it opens existing policies to signed-in students).';
+      if (m.includes('delete_blocked')) return 'The server refused the delete. Only the uploader\'s browser may delete, and the delete-file function must be deployed.';
       if (m.includes('invalid key')) return 'The name has characters storage rejects. Rename it.';
       if (m.includes('jwt') || m.includes('apikey') || m.includes('invalid api')) return 'Invalid SUPABASE_ANON_KEY. Check the key in CONFIG.';
       if (m.includes('failed to fetch') || m.includes('network')) return 'Network error. Check your connection and SUPABASE_URL.';
