@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script defer src="https://cloud.umami.is/script.js" data-website-id="b1469032-c12b-4966-8fbf-d735972d7f47"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <title>2ITI — Class Study Repository</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,6 +33,14 @@
   *:focus-visible{outline:2px solid #38bdf8;outline-offset:2px}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
   ::-webkit-scrollbar{width:8px}::-webkit-scrollbar-thumb{background:#334155;border-radius:8px}
+  input[type=date],input[type=time]{color-scheme:dark}
+  /* شات الدفعة — WhatsApp-style chat */
+  .chat-box{height:clamp(380px,calc(100vh - 16rem),820px);height:clamp(380px,calc(100dvh - 16rem),820px)}
+  @media (min-width:1024px){.chat-box{height:clamp(440px,calc(100vh - 9rem),860px);height:clamp(440px,calc(100dvh - 9rem),860px)}}
+  .chat-wall{background-color:#0b141a;background-image:radial-gradient(rgba(255,255,255,.04) 1px,transparent 1px);background-size:22px 22px}
+  .chat-in{background:#202c33;color:#e9edef;border-radius:.75rem;border-top-left-radius:.15rem}
+  .chat-out{background:#005c4b;color:#e9edef;border-radius:.75rem;border-top-right-radius:.15rem}
+  .chat-chip{background:rgba(32,44,51,.92);color:#8696a0;font-size:.75rem;line-height:1rem;padding:.25rem .75rem;border-radius:.5rem;box-shadow:0 1px 1px rgba(0,0,0,.25)}
 </style>
 </head>
 
@@ -98,7 +104,7 @@
 <div x-show="authed" class="max-w-7xl mx-auto px-4 py-5 sm:py-6 space-y-5">
 
   <!-- Welcome banner -->
-  <section dir="rtl" lang="ar" class="relative isolate rise">
+  <section x-show="view!=='chat' && view!=='youtube'" dir="rtl" lang="ar" class="relative isolate rise">
     <div class="absolute -inset-1 -z-10 rounded-3xl bg-gradient-to-r from-glow/40 via-violet2/40 to-glow/40 blur-xl opacity-60 animate-pulse"></div>
     <div class="rounded-2xl p-[1px] bg-gradient-to-br from-glow/60 via-slate-700/40 to-violet2/60">
       <p class="rounded-[15px] bg-ink/90 px-5 py-5 sm:px-8 sm:py-6 text-base sm:text-lg leading-[2] sm:leading-[2.1] font-medium text-slate-100">
@@ -129,11 +135,19 @@
           </template>
         </nav>
       </div>
-      <button type="button" @click="openWall()" :aria-pressed="view==='wall'" dir="rtl"
-        :class="view==='wall' ? 'bg-violet2/20 border border-violet2/60' : 'glass'"
+      <button type="button" @click="openChat()" :aria-pressed="view==='chat'" dir="rtl"
+        :class="view==='chat' ? 'bg-violet2/20 border border-violet2/60' : 'glass'"
         class=" w-full min-h-[56px] flex items-center gap-3 rounded-2xl px-4 text-right text-slate-100 transition hover:brightness-110">
         <span class="w-9 h-9 shrink-0 rounded-xl grid place-items-center bg-gradient-to-br from-glow to-violet2 text-ink"><i data-lucide="messages-square" class="w-5 h-5"></i></span>
-        <span class="flex-1 min-w-0 text-sm font-semibold leading-snug">مجتمع سيكوندا</span>
+        <span class="flex-1 min-w-0 text-sm font-semibold leading-snug">شات الدفعة</span>
+        <span x-show="chatUnread > 0" x-text="chatBadge" role="status" :aria-label="chatUnread + ' رسالة غير مقروءة'"
+              class="shrink-0 min-w-[1.5rem] h-6 px-1.5 rounded-full bg-rose-500 text-white text-xs font-bold grid place-items-center leading-none shadow-[0_0_12px_rgba(244,63,94,.55)]"></span>
+      </button>
+      <button type="button" @click="openYoutube()" :aria-pressed="view==='youtube'" dir="rtl"
+        :class="view==='youtube' ? 'bg-violet2/20 border border-violet2/60' : 'glass'"
+        class="w-full min-h-[56px] flex items-center gap-3 rounded-2xl px-4 text-right text-slate-100 transition hover:brightness-110">
+        <span class="w-9 h-9 shrink-0 rounded-xl grid place-items-center bg-gradient-to-br from-rose-400 to-violet2 text-ink"><i data-lucide="youtube" class="w-5 h-5"></i></span>
+        <span class="flex-1 min-w-0 text-sm font-semibold leading-snug">شرح يوتيوب</span>
       </button>
       </div>
     </aside>
@@ -144,11 +158,20 @@
         <button @click="selectClass(c)" :class="active===c && view==='files' ? 'bg-glow text-ink font-semibold border-glow' : 'glass text-slate-200'" class="min-h-[44px] px-3 rounded-full border border-transparent text-sm" x-text="c"></button>
       </template>
     </div>
-    <button type="button" @click="openWall()" :aria-pressed="view==='wall'" dir="rtl"
-        :class="view==='wall' ? 'bg-violet2/20 border border-violet2/60' : 'glass'"
+    <button type="button" @click="openChat()" :aria-pressed="view==='chat'" dir="rtl"
+        :class="view==='chat' ? 'bg-violet2/20 border border-violet2/60' : 'glass'"
         class="lg:hidden w-full min-h-[56px] flex items-center gap-3 rounded-2xl px-4 text-right text-slate-100 transition hover:brightness-110">
         <span class="w-9 h-9 shrink-0 rounded-xl grid place-items-center bg-gradient-to-br from-glow to-violet2 text-ink"><i data-lucide="messages-square" class="w-5 h-5"></i></span>
-        <span class="flex-1 min-w-0 text-sm font-semibold leading-snug">مجتمع سيكوندا</span>
+        <span class="flex-1 min-w-0 text-sm font-semibold leading-snug">شات الدفعة</span>
+        <span x-show="chatUnread > 0" x-text="chatBadge" role="status" :aria-label="chatUnread + ' رسالة غير مقروءة'"
+              class="shrink-0 min-w-[1.5rem] h-6 px-1.5 rounded-full bg-rose-500 text-white text-xs font-bold grid place-items-center leading-none shadow-[0_0_12px_rgba(244,63,94,.55)]"></span>
+      </button>
+
+    <button type="button" @click="openYoutube()" :aria-pressed="view==='youtube'" dir="rtl"
+        :class="view==='youtube' ? 'bg-violet2/20 border border-violet2/60' : 'glass'"
+        class="lg:hidden w-full min-h-[56px] flex items-center gap-3 rounded-2xl px-4 text-right text-slate-100 transition hover:brightness-110">
+        <span class="w-9 h-9 shrink-0 rounded-xl grid place-items-center bg-gradient-to-br from-rose-400 to-violet2 text-ink"><i data-lucide="youtube" class="w-5 h-5"></i></span>
+        <span class="flex-1 min-w-0 text-sm font-semibold leading-snug">شرح يوتيوب</span>
       </button>
 
     <main class="min-w-0 space-y-5">
@@ -199,14 +222,91 @@
         </template>
       </div>
 
+      <!-- Exam schedule entry (class page) -->
+      <button x-show="active && !cat" @click="selectCat('exams')" dir="rtl" class="card w-full rounded-xl min-h-[76px] px-4 py-4 flex items-center gap-3 text-right glass border-violet2/40">
+        <span class="w-11 h-11 shrink-0 rounded-xl grid place-items-center bg-gradient-to-br from-glow to-violet2 text-ink"><i data-lucide="calendar-clock" class="w-6 h-6"></i></span>
+        <span class="min-w-0 flex-1">
+          <span class="block text-white font-semibold text-lg leading-snug">جدول الامتحانات</span>
+          <span class="block text-xs text-slate-400 mt-0.5 truncate" dir="auto" x-text="examCardHint"></span>
+        </span>
+        <i data-lucide="chevron-left" class="w-5 h-5 shrink-0 text-slate-500"></i>
+      </button>
+
       <!-- Step 3: subject -->
-      <div x-show="active && cat && cat !== 'homework_notes' && !subj" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
+      <div x-show="active && cat && cat !== 'homework_notes' && cat !== 'exams' && !subj" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
         <template x-for="s in SUBJECTS" :key="s.id">
           <button @click="selectSubj(s.id)" class="card glass rounded-xl min-h-[56px] px-3 py-3 flex items-center gap-2.5 text-left text-sm text-white min-w-0">
             <i data-lucide="folder" class="w-5 h-5 shrink-0 text-violet2"></i><span class="truncate" dir="auto" x-text="s.name"></span>
           </button>
         </template>
       </div>
+
+      <!-- Exam schedule (each class has its own, independent list) -->
+      <section x-show="active && cat === 'exams'" dir="rtl" lang="ar" class="space-y-4 rise" aria-labelledby="exams-title">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex-1 min-w-[12rem]">
+            <h2 id="exams-title" class="font-display font-bold text-white text-xl">جدول الامتحانات — <span class="text-glow" x-text="active"></span></h2>
+            <p class="text-sm text-slate-400 mt-0.5">الأقرب أولاً، وبعدها الامتحانات اللي عدّت.</p>
+            <p class="mt-2 inline-flex items-center gap-2 rounded-lg border border-violet2/40 bg-violet2/10 px-3 py-1.5 text-sm text-violet-100"><i data-lucide="shield-check" class="w-4 h-4 shrink-0 text-violet2"></i>الكابو بس هو اللي يقدر يضيف الامتحانات</p>
+          </div>
+          <button type="button" @click="refreshExams()" :disabled="examsLoading" class="shrink-0 w-11 h-11 grid place-items-center rounded-lg text-glow hover:bg-glow/15 disabled:opacity-60" aria-label="تحديث" title="تحديث"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+          <button type="button" x-show="canManageExams" @click="openExamForm()" class="shrink-0 min-h-[44px] flex items-center gap-2 bg-glow text-ink font-semibold text-sm px-4 rounded-xl hover:brightness-110 transition shadow-[0_0_18px_rgba(56,189,248,.35)]">
+            <i data-lucide="plus" class="w-4 h-4"></i>إضافة امتحان
+          </button>
+        </div>
+
+        <div x-show="!canViewExams" class="glass rounded-2xl py-10 px-4 text-center">
+          <i data-lucide="lock" class="w-10 h-10 mx-auto text-slate-500 mb-3"></i>
+          <p class="text-white font-medium">جدول امتحانات الفصل ده متاح لطلاب الفصل بس</p>
+          <p class="text-sm text-slate-400 mt-1">تقدر تشوف جدول فصلك من صفحة فصلك.</p>
+        </div>
+
+        <div x-show="canViewExams" class="space-y-4">
+          <div x-show="examsError" role="alert" class="rounded-2xl border border-rose-400/40 bg-rose-400/10 p-4 text-sm text-rose-100 flex flex-wrap items-center gap-3">
+            <i data-lucide="circle-alert" class="w-5 h-5 shrink-0"></i><p class="min-w-0 flex-1" x-text="examsError"></p>
+            <button type="button" @click="refreshExams()" class="min-h-[44px] px-4 rounded-lg bg-rose-400/20 hover:bg-rose-400/30">حاول مرة تانية</button>
+          </div>
+          <p x-show="examsLoading" class="text-center py-8 text-slate-400">جارٍ التحميل…</p>
+          <div x-show="!examsLoading && !examsError && examsLoaded && !examItems.length" class="glass rounded-2xl py-10 px-4 text-center">
+            <i data-lucide="calendar-x" class="w-10 h-10 mx-auto text-slate-500 mb-3"></i>
+            <p class="text-white font-medium">مفيش امتحانات مضافة لسه</p>
+            <p class="text-sm text-slate-400 mt-1" x-text="canManageExams ? 'دوس على «إضافة امتحان» عشان تضيف أول امتحان.' : 'هتظهر هنا أول ما يتم إضافة امتحان.'"></p>
+          </div>
+
+          <ul class="space-y-3">
+            <template x-for="it in examItems" :key="it.key">
+              <li class="min-w-0">
+                <template x-if="it.kind === 'h'">
+                  <h3 class="pt-2 text-sm font-semibold text-slate-300 flex items-center gap-2"><span x-text="it.label"></span><span class="text-xs font-normal text-slate-400 bg-slate-700/50 rounded-full px-2 py-0.5" x-text="it.n"></span></h3>
+                </template>
+                <template x-if="it.kind === 'e'">
+                  <article class="glass rounded-2xl p-4 flex items-start gap-4 min-w-0" :class="[it.past ? 'opacity-70' : '', it.next ? '!border-glow/60 shadow-[0_0_20px_rgba(56,189,248,.18)]' : '']">
+                    <div class="w-14 shrink-0 rounded-xl text-center py-2 border" :class="it.past ? 'bg-slate-700/40 border-slate-600/40 text-slate-300' : 'bg-glow/10 border-glow/40 text-glow'">
+                      <div class="font-display font-bold text-2xl leading-none" x-text="examDay(it.e)"></div>
+                      <div class="text-xs mt-1" x-text="examMonth(it.e)"></div>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <h4 class="font-semibold text-white break-words min-w-0" dir="auto" x-text="it.e.title"></h4>
+                        <span class="shrink-0 text-xs rounded-full px-2 py-0.5 border" :class="it.past ? 'text-slate-400 border-slate-600/50' : 'text-violet2 border-violet2/40 bg-violet2/10'" x-text="examBadge(it.e)"></span>
+                      </div>
+                      <p class="text-sm text-slate-300 mt-1.5 flex items-center gap-1.5"><i data-lucide="calendar-days" class="w-4 h-4 shrink-0 text-slate-400"></i><span x-text="fmtExamDate(it.e)"></span></p>
+                      <p class="text-sm text-slate-300 mt-1 flex items-center gap-1.5"><i data-lucide="clock" class="w-4 h-4 shrink-0 text-slate-400"></i><span x-text="it.e.exam_time ? fmtExamTime(it.e) : 'بدون وقت محدد'"></span></p>
+                      <div x-show="canManageExams" class="flex flex-wrap items-center gap-1 mt-3 -mb-1">
+                        <button type="button" x-show="examDelId !== it.e.id" @click="openExamForm(it.e)" class="min-h-[44px] px-3 rounded-lg text-sm flex items-center gap-1.5 transition text-glow hover:bg-glow/15"><i data-lucide="pencil" class="w-4 h-4"></i>تعديل</button>
+                        <button type="button" x-show="examDelId !== it.e.id" @click="examDelId = it.e.id" class="min-h-[44px] px-3 rounded-lg text-sm flex items-center gap-1.5 transition text-rose-300 hover:bg-rose-400/15"><i data-lucide="trash-2" class="w-4 h-4"></i>حذف</button>
+                        <span x-show="examDelId === it.e.id" class="text-sm text-slate-300 px-1">متأكد إنك عايز تحذف الامتحان؟</span>
+                        <button type="button" x-show="examDelId === it.e.id" @click="removeExam(it.e)" :disabled="examBusy" class="min-h-[44px] px-4 rounded-lg bg-rose-500 text-white text-sm font-semibold disabled:opacity-60">نعم، احذف</button>
+                        <button type="button" x-show="examDelId === it.e.id" @click="examDelId = ''" class="min-h-[44px] px-3 rounded-lg bg-slate-700/50 text-sm">إلغاء</button>
+                      </div>
+                    </div>
+                  </article>
+                </template>
+              </li>
+            </template>
+          </ul>
+        </div>
+      </section>
 
       <!-- Step 4: upload + files (only inside class/category/subject) -->
       <div x-show="subj" class="space-y-5">
@@ -216,6 +316,7 @@
           <span class="text-xs text-slate-400" x-text="'Any format · up to ' + CONFIG.MAX_FILE_MB + ' MB each'"></span>
         </div>
         <input x-ref="picker" type="file" multiple class="hidden" @change="pick($event.target.files); $event.target.value=''">
+        <input x-ref="imgPicker" type="file" multiple accept="image/jpeg,image/png,image/gif,image/webp,image/avif" class="hidden" @change="pick($event.target.files); $event.target.value=''">
         <div @dragover.prevent="drag=true" @dragleave.prevent="drag=false" @drop.prevent="drag=false; pick($event.dataTransfer.files)"
              @click="openPicker()" tabindex="0" @keydown.enter="openPicker()" role="button"
              :class="drag ? 'border-glow bg-glow/10' : 'border-slate-600/70 hover:border-glow/60'"
@@ -223,6 +324,43 @@
           <i data-lucide="cloud-upload" class="w-9 h-9 mx-auto text-glow mb-2"></i>
           <p class="font-medium text-white">Tap to choose files<span class="hidden sm:inline"> or drop them here</span></p>
           <p class="text-sm text-slate-400 mt-1">PDF, images, Word, ZIP, video — anything goes</p>
+          <p class="text-xs text-slate-500 mt-1">Choose several images at once and they are sent together as one gallery.</p>
+        </div>
+        <!-- Image preview: every selected image as a thumbnail; several images are sent as ONE gallery message -->
+        <div x-show="imgs.length" class="mt-4 rounded-xl bg-ink/50 p-3 sm:p-4 space-y-3">
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+            <span class="flex items-center gap-2 min-w-0 font-medium text-white"><i data-lucide="images" class="w-4 h-4 shrink-0 text-glow"></i><span x-text="imgs.length + (imgs.length > 1 ? ' images — sent together as one gallery' : ' image')"></span></span>
+            <span class="text-xs text-slate-400" x-text="fmtSize(imgBytes) + ' · up to ' + CONFIG.MAX_GROUP_IMAGES + ' images, ' + CONFIG.MAX_IMAGE_MB + ' MB each'"></span>
+            <button type="button" x-show="!uploading && !imgs.some(m => m.stage === 'done')" @click="clearImgs()" class="ml-auto min-h-[36px] px-2 text-xs text-slate-400 hover:text-rose-300">Clear all</button>
+          </div>
+          <ul class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+            <template x-for="(m, i) in imgs" :key="m.id">
+              <li class="relative aspect-square rounded-lg overflow-hidden bg-slate-800/80 border" :class="m.stage === 'error' ? 'border-rose-400/70' : 'border-slate-600/40'">
+                <img :src="m.thumb || null" x-show="m.thumb" :alt="m.name" draggable="false" class="w-full h-full object-cover">
+                <span x-show="!m.thumb" class="absolute inset-0 grid place-items-center"><svg class="animate-spin w-5 h-5 text-slate-500" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity=".25"/><path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></span>
+                <span class="absolute left-1 top-1 min-w-[1.25rem] h-5 px-1 rounded bg-ink/75 text-[11px] font-semibold text-white grid place-items-center" x-text="i + 1"></span>
+                <button type="button" x-show="!uploading && m.stage !== 'done'" @click="removeImg(m)" class="absolute right-0 top-0 w-10 h-10 grid place-items-center text-white hover:text-rose-300" :aria-label="'Remove ' + m.name" :title="'Remove ' + m.name"><span class="w-6 h-6 grid place-items-center rounded-full bg-ink/80"><i data-lucide="x" class="w-4 h-4"></i></span></button>
+                <span x-show="m.stage === 'done'" class="absolute right-1 top-1 w-6 h-6 rounded-full bg-emerald-400 text-ink grid place-items-center" role="img" aria-label="Uploaded"><i data-lucide="check" class="w-4 h-4"></i></span>
+                <span x-show="m.stage === 'ready'" class="absolute left-1 bottom-1 px-1.5 rounded bg-ink/75 text-[10px] text-slate-200" x-text="fmtSize(m.size)"></span>
+                <div x-show="m.stage === 'uploading' || m.stage === 'registering' || m.stage === 'grouping'" class="absolute inset-0 bg-ink/55 grid place-items-center text-xs font-semibold text-white" x-text="m.stage === 'uploading' ? m.pct + '%' : '…'"></div>
+                <div x-show="m.stage === 'uploading' || m.stage === 'registering' || m.stage === 'grouping'" class="absolute inset-x-0 bottom-0 h-1.5 bg-slate-900/70"><div class="h-full bg-glow transition-[width]" :style="'width:' + m.pct + '%'"></div></div>
+                <div x-show="m.stage === 'error'" class="absolute inset-x-0 bottom-0 bg-rose-500/90 text-white text-[11px] font-medium px-1.5 py-1 truncate" :title="m.err">Failed</div>
+              </li>
+            </template>
+            <li x-show="!uploading && imgs.length < CONFIG.MAX_GROUP_IMAGES">
+              <button type="button" @click="openImgPicker()" class="w-full aspect-square rounded-lg border-2 border-dashed border-slate-600/70 hover:border-glow/60 hover:text-glow text-slate-400 transition flex flex-col items-center justify-center gap-1 text-xs font-medium"><i data-lucide="image-plus" class="w-6 h-6"></i>Add more</button>
+            </li>
+          </ul>
+          <ul x-show="imgFailed.length" role="alert" class="space-y-1 rounded-lg border border-rose-400/40 bg-rose-400/10 px-3 py-2 text-xs text-rose-100">
+            <template x-for="m in imgFailed" :key="m.id"><li class="flex gap-2 min-w-0"><span class="shrink-0 max-w-[40%] truncate font-medium" dir="auto" x-text="m.name"></span><span class="min-w-0 break-words" x-text="m.err"></span></li></template>
+          </ul>
+          <p x-show="imgFailed.length && imgs.some(m => m.stage === 'done')" class="text-xs text-emerald-300">Images with a ✓ are already saved — only the failed ones will be sent again.</p>
+          <label class="block">
+            <span class="text-xs text-slate-400" x-text="imgs.length > 1 ? 'Gallery name (shown to everyone)' : 'Display name (shown to everyone)'"></span>
+            <input x-model="imgTitle" @input="imgTitleAuto = false" :disabled="uploading || !!grp" dir="auto" :maxlength="imgs.length > 1 ? 70 : 80" required placeholder="e.g. صور السبورة — حصة الفيزياء"
+                   :class="!imgTitle.trim() && 'border-rose-400/70'"
+                   class="mt-1 w-full min-h-[44px] bg-ink/70 border border-slate-600/60 rounded-lg px-3 text-sm focus:border-glow outline-none disabled:opacity-60">
+          </label>
         </div>
         <ul x-show="queue.length" class="mt-4 space-y-2">
           <template x-for="(q,i) in queue" :key="q.id">
@@ -241,14 +379,18 @@
               </label>
             </li>
           </template>
-          <li class="pt-1">
-            <p x-show="profile" class="mb-3 flex items-center gap-1.5 text-xs text-slate-400"><i data-lucide="lock" class="w-3.5 h-3.5"></i>Uploading as <span class="text-slate-200 font-medium" dir="auto" x-text="profile && profile.full_name"></span> (from your account)</p>
-            <button @click="upload()" :disabled="uploading || !subj" class="w-full sm:w-auto min-h-[44px] flex items-center justify-center gap-2 bg-glow text-ink font-semibold px-5 rounded-xl disabled:opacity-60 hover:brightness-110 transition">
-              <svg x-show="uploading" class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity=".25"/><path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
-              <span x-text="uploading ? `Uploading ${done}/${total}…` : `Upload ${queue.length} file${queue.length>1?'s':''}`"></span>
-            </button>
-          </li>
         </ul>
+        <div x-show="queue.length || imgs.length" class="mt-4">
+          <p x-show="profile" class="mb-3 flex items-center gap-1.5 text-xs text-slate-400"><i data-lucide="lock" class="w-3.5 h-3.5"></i>Uploading as <span class="text-slate-200 font-medium" dir="auto" x-text="profile && profile.full_name"></span> (from your account)</p>
+          <button @click="upload()" :disabled="uploading || !subj" class="w-full sm:w-auto min-h-[44px] flex items-center justify-center gap-2 bg-glow text-ink font-semibold px-5 rounded-xl disabled:opacity-60 hover:brightness-110 transition">
+            <svg x-show="uploading" class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity=".25"/><path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+            <span x-text="uploadLabel"></span>
+          </button>
+          <div x-show="uploading" class="mt-3" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" :aria-valuenow="overallPct">
+            <div class="h-2 rounded-full bg-slate-700/60 overflow-hidden"><div class="h-full bg-glow transition-[width]" :style="'width:' + overallPct + '%'"></div></div>
+            <p class="mt-1 text-xs text-slate-400" x-text="overallPct + '% · ' + done + ' of ' + total + ' finished'"></p>
+          </div>
+        </div>
       </section>
 
       <div class="relative">
@@ -269,6 +411,8 @@
 
       <div class="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
         <template x-for="f in filtered" :key="f.key">
+          <div class="contents">
+          <template x-if="f.kind !== 'group'">
           <article class="card glass rounded-2xl p-4 flex flex-col gap-3 min-w-0">
             <div class="flex items-start gap-3 min-w-0">
               <div class="w-12 h-12 shrink-0 rounded-xl grid place-items-center text-[11px] font-bold font-display" :style="badge(f.ext)" x-text="(f.ext||'FILE').slice(0,4).toUpperCase()"></div>
@@ -293,6 +437,45 @@
               </div>
             </div>
           </article>
+          </template>
+          <!-- Gallery: all images of one upload, ONE sender + timestamp -->
+          <template x-if="f.kind === 'group'">
+          <article class="card glass rounded-2xl p-4 flex flex-col gap-3 min-w-0 sm:col-span-2 xl:col-span-3">
+            <div class="flex items-start gap-3 min-w-0">
+              <div class="w-12 h-12 shrink-0 rounded-xl grid place-items-center" :style="badge('jpg')"><i data-lucide="images" class="w-5 h-5"></i></div>
+              <div class="min-w-0">
+                <h3 class="font-medium text-white truncate" dir="auto" :title="f.title" x-text="f.title"></h3>
+                <p class="text-xs text-slate-400 mt-0.5" x-text="f.images.length + (f.images.length > 1 ? ' images' : ' image') + ' · ' + fmtSize(f.size) + ' · ' + fmtDateTime(f.date)"></p>
+                <p x-show="f.by" class="text-xs text-slate-500 mt-0.5 truncate" dir="auto" x-text="f.by"></p>
+              </div>
+            </div>
+            <ul class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-2">
+              <template x-for="(im, i) in visibleImages(f)" :key="im.key">
+                <li class="relative aspect-square rounded-lg overflow-hidden bg-slate-800/80">
+                  <button type="button" @click="openLightbox(f, i)" class="absolute inset-0 w-full h-full block" :aria-label="'View ' + im.name"><img :src="im.src" :alt="im.title" loading="lazy" decoding="async" class="w-full h-full object-cover"></button>
+                  <a :href="im.url" :download="im.name" target="_blank" rel="noopener" class="absolute right-1.5 bottom-1.5 w-10 h-10 grid place-items-center rounded-full bg-ink/80 text-white hover:bg-glow hover:text-ink transition" :aria-label="'Download ' + im.name" :title="'Download ' + im.name"><i data-lucide="download" class="w-4 h-4"></i></a>
+                </li>
+              </template>
+            </ul>
+            <button type="button" x-show="f.images.length > GALLERY_PREVIEW" @click="openGroups[f.key] = !openGroups[f.key]" class="self-start min-h-[44px] px-3 -my-1 rounded-lg text-sm text-glow hover:bg-glow/15" x-text="openGroups[f.key] ? 'Show fewer' : 'Show all ' + f.images.length + ' images'"></button>
+            <div class="mt-auto flex flex-wrap items-stretch gap-2">
+              <button type="button" @click="downloadAll(f)" :disabled="!!dlKey" class="flex-1 min-h-[44px] flex items-center justify-center gap-2 text-sm font-medium rounded-lg bg-slate-700/50 hover:bg-glow hover:text-ink transition disabled:opacity-60 disabled:hover:bg-slate-700/50 disabled:hover:text-inherit">
+                <svg x-show="dlKey === f.key" class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity=".25"/><path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+                <span x-show="dlKey !== f.key" class="grid place-items-center"><i data-lucide="download" class="w-4 h-4"></i></span>
+                <span x-text="dlKey === f.key ? 'Downloading ' + dlDone + '/' + dlTotal + '…' : 'Download All'"></span>
+              </button>
+              <button x-show="f.mine && delKey !== f.key" type="button" @click="delKey = f.key" dir="rtl" class="min-h-[44px] px-4 rounded-lg text-sm flex items-center justify-center gap-1.5 text-rose-300 border border-rose-400/30 hover:bg-rose-400/15 transition" aria-label="حذف الصور">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>حذف
+              </button>
+              <div x-show="f.mine && delKey === f.key" dir="rtl" class="w-full flex flex-wrap items-center gap-2">
+                <span class="text-sm text-slate-300">متأكد إنك عايز تحذف كل الصور دي؟</span>
+                <button type="button" @click="removeGroup(f)" :disabled="deleting" class="min-h-[44px] px-4 rounded-lg bg-rose-500 text-white text-sm font-semibold disabled:opacity-60">نعم، احذف</button>
+                <button type="button" @click="delKey = ''" class="min-h-[44px] px-3 rounded-lg bg-slate-700/50 text-sm">إلغاء</button>
+              </div>
+            </div>
+          </article>
+          </template>
+          </div>
         </template>
       </div>
       </div>
@@ -303,7 +486,7 @@
         <div class="flex items-center gap-3">
           <div class="flex-1 min-w-0">
             <h2 class="font-display font-bold text-white text-xl" x-text="wallTitle"></h2>
-            <p class="text-sm text-slate-400 mt-0.5" x-text="view==='wall' ? 'هنا تقدر تسأل على اي حاجه انت عايزها 🥰' : 'اكتب واجب النهارده أو أي ملاحظة، وكل الفصل هيشوفها.'"></p>
+            <p class="text-sm text-slate-400 mt-0.5">اكتب واجب النهارده أو أي ملاحظة، وكل الفصل هيشوفها.</p>
           </div>
           <button @click="loadPosts()" class="shrink-0 w-11 h-11 grid place-items-center rounded-lg text-glow hover:bg-glow/15" aria-label="تحديث"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
         </div>
@@ -360,6 +543,162 @@
         </ul>
       </section>
 
+      <!-- شات الدفعة: WhatsApp-style realtime chat (table: chat_messages) -->
+      <section x-show="view==='chat' && authed" dir="rtl" lang="ar" class="rise" aria-label="شات الدفعة">
+        <div class="chat-box glass rounded-2xl overflow-hidden flex flex-col">
+          <!-- header -->
+          <div class="shrink-0 flex items-center gap-3 px-3 sm:px-4 min-h-[60px] bg-[#202c33]/95 border-b border-slate-700/50">
+            <span class="w-10 h-10 shrink-0 rounded-full grid place-items-center bg-gradient-to-br from-glow to-violet2 text-ink"><i data-lucide="messages-square" class="w-5 h-5"></i></span>
+            <div class="min-w-0 flex-1">
+              <h2 class="font-display font-bold text-white leading-tight truncate">شات الدفعة</h2>
+              <p class="text-xs truncate flex items-center gap-1.5" :class="chatLive || demo ? 'text-emerald-300' : 'text-amber-300'">
+                <span class="w-1.5 h-1.5 rounded-full shrink-0" :class="chatLive || demo ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'"></span>
+                <span class="truncate" x-text="demo ? 'وضع تجريبي' : (chatLive ? 'كل طلاب الدفعة · متصل' : 'جارٍ الاتصال…')"></span>
+              </p>
+            </div>
+            <button type="button" @click="refreshChat()" class="shrink-0 w-11 h-11 grid place-items-center rounded-lg text-glow hover:bg-glow/15" aria-label="تحديث" title="تحديث"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+          </div>
+
+          <!-- messages -->
+          <div class="relative flex-1 min-h-0">
+            <div x-ref="chatScroll" @scroll.passive="onChatScroll()" role="log" aria-live="polite" aria-relevant="additions" aria-label="رسائل الشات"
+                 class="chat-wall absolute inset-0 overflow-y-auto overscroll-contain px-2 sm:px-5 py-3">
+              <p x-show="chatLoading" class="text-center py-8 text-slate-400">جارٍ التحميل…</p>
+              <div x-show="chatError" role="alert" class="rounded-2xl border border-rose-400/40 bg-rose-400/10 p-4 text-sm text-rose-100 flex flex-wrap items-center gap-3 my-3">
+                <p class="min-w-0 flex-1" x-text="chatError"></p>
+                <button type="button" @click="refreshChat()" class="min-h-[44px] px-4 rounded-lg bg-rose-400/20 hover:bg-rose-400/30">حاول مرة تانية</button>
+              </div>
+              <div x-show="!chatLoading && !chatError && !chatMsgs.length" class="chat-chip mx-auto my-10 max-w-xs text-center !text-sm !leading-7 !py-3 !px-4">لسه مفيش رسائل. ابدأ المحادثة وقول أهلاً 👋</div>
+              <div x-show="chatHasMore" class="flex justify-center mb-2">
+                <button type="button" @click="chatLoadOlder()" :disabled="chatLoadingOlder" class="chat-chip min-h-[36px] hover:brightness-125 disabled:opacity-60" x-text="chatLoadingOlder ? 'جارٍ التحميل…' : 'عرض رسائل أقدم'"></button>
+              </div>
+
+              <template x-for="it in chatItems" :key="it.key">
+                <div class="min-w-0">
+                  <template x-if="it.kind==='day'">
+                    <div class="flex justify-center my-3"><span class="chat-chip" x-text="it.label"></span></div>
+                  </template>
+                  <template x-if="it.kind==='unread'">
+                    <div data-unread-divider class="flex justify-center my-3"><span class="chat-chip !bg-sky-900/70 !text-sky-100">رسائل غير مقروءة</span></div>
+                  </template>
+                  <template x-if="it.kind==='msg'">
+                    <div :data-mid="it.m.id" class="flex py-0.5" :class="it.mine ? 'justify-start' : 'justify-end'">
+                      <div class="max-w-[88%] sm:max-w-[72%] min-w-0 px-3 pt-1.5 pb-1 shadow-sm"
+                           :class="[it.mine ? 'chat-out' : 'chat-in', it.m.state==='sending' && 'opacity-75', it.m.state==='failed' && 'ring-1 ring-rose-400/70']">
+                        <p class="text-xs font-bold truncate mb-0.5" dir="auto" :style="'color:' + chatColor(it.m.sender_id)" x-text="it.m.sender_name"></p>
+                        <p class="whitespace-pre-wrap break-words text-sm sm:text-[15px] leading-6" dir="auto" x-text="it.m.content"></p>
+                        <div class="mt-0.5 flex items-center justify-end gap-1.5 text-[11px] text-slate-300/70 select-none">
+                          <span x-show="it.m.state==='sending'">جارٍ الإرسال…</span>
+                          <span :title="new Date(it.m.created_at).toLocaleString('ar-EG')" x-text="chatTime(it.m.created_at)"></span>
+                          <span x-show="it.mine && it.m.state==='sent'" class="text-sky-300" aria-label="تم الإرسال">✓</span>
+                        </div>
+                        <div x-show="it.m.state==='failed'" class="mt-1 mb-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-rose-200">
+                          <span class="min-w-0" x-text="it.m.err || 'فشل الإرسال.'"></span>
+                          <button type="button" @click="chatRetry(it.m)" class="min-h-[32px] underline underline-offset-2">إعادة المحاولة</button>
+                          <button type="button" @click="chatDiscard(it.m)" class="min-h-[32px] underline underline-offset-2 text-slate-300">حذف</button>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </template>
+            </div>
+
+            <button type="button" x-show="!chatAtBottom" @click="chatScrollBottom()" aria-label="النزول لآخر رسالة" title="آخر رسالة"
+                    class="absolute bottom-3 left-3 w-11 h-11 rounded-full bg-[#202c33] border border-slate-600/60 text-slate-200 shadow-lg grid place-items-center hover:brightness-125">
+              <i data-lucide="chevron-down" class="w-5 h-5"></i>
+              <span x-show="chatUnread > 0" x-text="chatBadge" class="absolute -top-2 -right-1 min-w-[1.25rem] h-5 px-1 rounded-full bg-emerald-400 text-ink text-[11px] font-bold grid place-items-center"></span>
+            </button>
+          </div>
+
+          <!-- composer: Enter = send, Shift+Enter = new line -->
+          <form @submit.prevent="sendChat()" novalidate class="shrink-0 bg-[#202c33]/95 border-t border-slate-700/50 px-2 sm:px-3 pt-2 pb-1.5">
+            <div class="flex items-end gap-2">
+              <textarea x-ref="chatInput" x-model="chatText" @keydown="onChatKey($event)" @input="chatGrow()" rows="1" maxlength="1000" dir="auto" enterkeyhint="send" autocomplete="off"
+                        aria-label="اكتب رسالة" placeholder="اكتب رسالة…"
+                        class="flex-1 min-w-0 resize-none max-h-36 bg-[#2a3942] border border-transparent rounded-2xl px-4 py-2.5 text-sm sm:text-[15px] leading-6 text-slate-100 placeholder:text-slate-400 focus:border-glow outline-none"></textarea>
+              <button type="submit" @mousedown.prevent :disabled="!chatText.trim()" aria-label="إرسال" title="إرسال"
+                      class="shrink-0 w-11 h-11 rounded-full bg-glow text-ink grid place-items-center hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed transition"><i data-lucide="send" class="w-5 h-5 -scale-x-100"></i></button>
+            </div>
+            <p class="mt-1.5 px-1 flex items-center gap-1.5 text-[11px] text-slate-400 leading-5">
+              <i data-lucide="lock" class="w-3 h-3 shrink-0"></i>
+              <span class="min-w-0 truncate">بتبعت باسم <span class="text-slate-200 font-medium" dir="auto" x-text="authorLabel"></span> (من حسابك ومينفعش يتغير)</span>
+              <span x-show="chatText.length > 800" class="shrink-0 text-amber-300" x-text="chatText.length + ' / 1000'"></span>
+              <span class="hidden sm:inline shrink-0 mr-auto">Enter للإرسال · Shift+Enter لسطر جديد</span>
+            </p>
+          </form>
+        </div>
+      </section>
+
+      <!-- شرح يوتيوب: روابط فيديوهات الشرح (table: youtube_videos) -->
+      <section x-show="view==='youtube' && authed" dir="rtl" lang="ar" class="space-y-4 rise" aria-label="شرح يوتيوب">
+        <div class="flex items-center gap-3">
+          <h2 class="flex-1 min-w-0 font-display font-bold text-white text-xl">شرح يوتيوب</h2>
+          <button type="button" @click="ytRefresh()" class="shrink-0 w-11 h-11 grid place-items-center rounded-lg text-glow hover:bg-glow/15" aria-label="تحديث" title="تحديث"><span class="block" :class="ytLoading && 'animate-spin'"><i data-lucide="refresh-cw" class="w-4 h-4"></i></span></button>
+        </div>
+
+        <div class="relative isolate">
+          <div class="absolute -inset-1 -z-10 rounded-3xl bg-gradient-to-r from-glow/30 via-violet2/30 to-glow/30 blur-xl opacity-50"></div>
+          <div class="rounded-2xl p-[1px] bg-gradient-to-br from-glow/60 via-slate-700/40 to-violet2/60">
+            <p class="rounded-[15px] bg-ink/90 px-5 py-4 text-base sm:text-lg leading-[2] font-medium text-slate-100">هنا تقدر تحط فيديوهات شرح عشان تفيد غيرك 🥰</p>
+          </div>
+        </div>
+
+        <form @submit.prevent="ytSubmit()" novalidate class="glass rounded-2xl p-4 sm:p-5 space-y-3">
+          <label class="block">
+            <span class="text-sm text-slate-300">رابط الفيديو على يوتيوب</span>
+            <input x-model="ytUrl" @input="ytError=''" dir="ltr" type="url" inputmode="url" maxlength="300" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://www.youtube.com/watch?v=..."
+                   class="mt-1 w-full min-h-[48px] bg-ink/70 border border-slate-600/60 rounded-lg px-3 text-sm focus:border-glow outline-none">
+          </label>
+          <label class="block">
+            <span class="text-sm text-slate-300">عنوان الفيديو <span class="text-slate-500">(اختياري)</span></span>
+            <input x-model="ytTitle" @input="ytError=''" dir="auto" type="text" maxlength="100" autocomplete="off" placeholder="مثال: شرح الدرس الأول في الفيزياء"
+                   class="mt-1 w-full min-h-[48px] bg-ink/70 border border-slate-600/60 rounded-lg px-3 text-sm focus:border-glow outline-none">
+          </label>
+          <p x-show="ytError" role="alert" class="rounded-lg border border-rose-400/40 bg-rose-400/10 px-3 py-2 text-sm text-rose-100" x-text="ytError"></p>
+          <div class="flex flex-wrap items-center gap-3">
+            <button type="submit" :disabled="ytSaving || !ytUrl.trim()" class="min-h-[48px] px-6 rounded-xl bg-glow text-ink font-semibold text-sm hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition" x-text="ytSaving ? 'جارٍ الإضافة…' : 'إضافة الفيديو'"></button>
+            <span class="min-w-0 text-xs text-slate-400 flex items-center gap-1.5"><i data-lucide="lock" class="w-3 h-3 shrink-0"></i><span class="truncate">هتتضاف باسم <span class="text-slate-200 font-medium" dir="auto" x-text="authorLabel"></span> (من حسابك)</span></span>
+          </div>
+        </form>
+
+        <div x-show="ytListError" role="alert" class="rounded-2xl border border-rose-400/40 bg-rose-400/10 p-4 text-sm text-rose-100 flex flex-wrap items-center gap-3">
+          <p class="min-w-0 flex-1" x-text="ytListError"></p>
+          <button type="button" @click="ytRefresh()" class="min-h-[44px] px-4 rounded-lg bg-rose-400/20 hover:bg-rose-400/30">حاول مرة تانية</button>
+        </div>
+        <p x-show="ytLoading && !ytVideos.length" class="text-center py-8 text-slate-400">جارٍ التحميل…</p>
+        <p x-show="!ytLoading && !ytListError && !ytVideos.length" class="text-center py-8 text-slate-400 leading-7">لسه مفيش فيديوهات. كن أول واحد يضيف شرح 🎬</p>
+
+        <ul class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
+          <template x-for="v in ytVideos" :key="v.id">
+            <li class="glass rounded-2xl overflow-hidden min-w-0 flex flex-col">
+              <div class="relative aspect-video bg-black">
+                <template x-if="!ytPlaying[v.id]">
+                  <button type="button" @click="ytPlay(v)" class="absolute inset-0 w-full h-full group" :aria-label="'تشغيل: ' + ytTitleOf(v)">
+                    <img :src="ytThumb(v.video_id)" :alt="ytTitleOf(v)" loading="lazy" referrerpolicy="no-referrer" class="w-full h-full object-cover">
+                    <span class="absolute inset-0 grid place-items-center bg-black/25 group-hover:bg-black/10 transition">
+                      <span class="w-16 h-11 rounded-xl bg-red-600 grid place-items-center shadow-lg"><svg viewBox="0 0 24 24" class="w-6 h-6 text-white" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
+                    </span>
+                  </button>
+                </template>
+                <template x-if="ytPlaying[v.id]">
+                  <iframe :src="ytEmbed(v.video_id)" :title="ytTitleOf(v)" class="absolute inset-0 w-full h-full" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                </template>
+              </div>
+              <div class="p-4 space-y-3 flex-1 flex flex-col">
+                <h3 class="font-bold text-white leading-7 break-words" dir="auto" x-text="ytTitleOf(v)"></h3>
+                <p class="text-xs text-slate-400 mt-auto"><span dir="auto" x-text="v.submitter_name"></span> · <span :title="new Date(v.created_at).toLocaleString('ar-EG')" x-text="ago(v.created_at)"></span></p>
+                <a :href="'https://www.youtube.com/watch?v=' + v.video_id" target="_blank" rel="noopener noreferrer"
+                   class="min-h-[44px] px-4 rounded-xl bg-red-600/90 hover:bg-red-600 text-white text-sm font-semibold flex items-center justify-center gap-2 transition">
+                  <i data-lucide="external-link" class="w-4 h-4"></i>فتح على يوتيوب
+                </a>
+              </div>
+            </li>
+          </template>
+        </ul>
+      </section>
+
       <!-- Student profile (read-only: official data comes from the school account list) -->
       <section x-show="view==='profile' && authed" dir="rtl" lang="ar" class="space-y-4 rise">
         <div class="flex items-center gap-3">
@@ -392,6 +731,60 @@
   </div>
 </div>
 
+<!-- Exam add/edit dialog -->
+<div x-show="examForm.open" x-cloak @keydown.escape.window="closeExamForm()" class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="exam-form-title" dir="rtl" lang="ar">
+  <div class="fixed inset-0 bg-black/65" @click="closeExamForm()"></div>
+  <div class="relative min-h-full flex items-end sm:items-center justify-center p-3 sm:p-4">
+    <form @submit.prevent="saveExam()" novalidate class="relative w-full max-w-md rounded-2xl bg-panel border border-slate-600/50 shadow-2xl p-5 sm:p-6 space-y-4 rise">
+      <div class="flex items-center gap-3">
+        <h2 id="exam-form-title" class="flex-1 min-w-0 font-display font-bold text-white text-xl" x-text="examForm.mode === 'edit' ? 'تعديل الامتحان' : 'إضافة امتحان'"></h2>
+        <span class="shrink-0 text-xs text-glow border border-glow/40 rounded-full px-2.5 py-0.5" x-text="examForm.cls"></span>
+      </div>
+      <label class="block">
+        <span class="text-sm text-slate-300">اسم الامتحان <span class="text-rose-300">*</span></span>
+        <input x-ref="examTitle" x-model="examForm.title" @input="examForm.error = ''" dir="auto" type="text" maxlength="120" placeholder="مثال: امتحان الرياضيات"
+               :class="examForm.error && !examForm.title.trim() ? 'border-rose-400/70' : 'border-slate-600/60'"
+               class="mt-1 w-full min-h-[48px] bg-ink/70 border rounded-lg px-3 text-sm focus:border-glow outline-none">
+      </label>
+      <label class="block">
+        <span class="text-sm text-slate-300">التاريخ <span class="text-rose-300">*</span></span>
+        <input x-model="examForm.date" @input="examForm.error = ''" dir="ltr" type="date" min="2020-01-01" max="2100-12-31"
+               :class="examForm.error && !examForm.date ? 'border-rose-400/70' : 'border-slate-600/60'"
+               class="mt-1 w-full min-h-[48px] bg-ink/70 border rounded-lg px-3 text-sm focus:border-glow outline-none">
+      </label>
+      <div class="block">
+        <label class="block">
+          <span class="text-sm text-slate-300">الوقت <span class="text-xs text-slate-400">(اختياري)</span></span>
+          <input x-model="examForm.time" @input="examForm.error = ''" dir="ltr" type="time"
+                 class="mt-1 w-full min-h-[48px] bg-ink/70 border border-slate-600/60 rounded-lg px-3 text-sm focus:border-glow outline-none">
+        </label>
+        <button type="button" x-show="examForm.time" @click="examForm.time = ''" class="mt-1 min-h-[36px] text-xs text-slate-400 hover:text-glow underline underline-offset-2">مسح الوقت</button>
+      </div>
+      <p x-show="examForm.error" role="alert" class="rounded-lg border border-rose-400/40 bg-rose-400/10 px-3 py-2 text-sm text-rose-100" x-text="examForm.error"></p>
+      <div class="flex gap-2 pt-1">
+        <button type="submit" :disabled="examForm.saving" class="flex-1 min-h-[48px] rounded-xl bg-glow text-ink font-semibold hover:brightness-110 disabled:opacity-60 transition" x-text="examForm.saving ? 'جارٍ الحفظ…' : 'حفظ'"></button>
+        <button type="button" @click="closeExamForm()" :disabled="examForm.saving" class="min-h-[48px] px-5 rounded-xl bg-slate-700/50 hover:bg-slate-700 text-sm disabled:opacity-60">إلغاء</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Image viewer (gallery lightbox) -->
+<div x-show="lb.open" x-cloak @keydown.escape.window="lb.open && closeLightbox()" @keydown.arrow-left.window="lb.open && lbStep(-1)" @keydown.arrow-right.window="lb.open && lbStep(1)"
+     class="fixed inset-0 z-50 flex flex-col bg-black/95" role="dialog" aria-modal="true" aria-label="Image viewer">
+  <div class="shrink-0 flex items-center gap-2 pl-4 pr-2 min-h-[56px] text-sm text-slate-200">
+    <span class="min-w-0 flex-1 truncate" dir="auto" x-text="lb.title"></span>
+    <span class="shrink-0 text-slate-400" x-text="(lb.i + 1) + ' / ' + lb.imgs.length"></span>
+    <a :href="lbCur && lbCur.url" :download="lbCur && lbCur.name" target="_blank" rel="noopener" class="shrink-0 w-11 h-11 grid place-items-center rounded-lg hover:bg-white/10" aria-label="Download this image" title="Download this image"><i data-lucide="download" class="w-5 h-5"></i></a>
+    <button x-ref="lbClose" type="button" @click="closeLightbox()" class="shrink-0 w-11 h-11 grid place-items-center rounded-lg hover:bg-white/10" aria-label="Close" title="Close"><i data-lucide="x" class="w-5 h-5"></i></button>
+  </div>
+  <div class="relative flex-1 min-h-0 flex items-center justify-center px-2 pb-3" @click.self="closeLightbox()">
+    <button type="button" x-show="lb.imgs.length > 1" @click="lbStep(-1)" class="absolute left-1 sm:left-3 z-10 w-11 h-11 rounded-full bg-ink/80 border border-slate-600/60 grid place-items-center hover:bg-glow hover:text-ink transition" aria-label="Previous image"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+    <img :src="lbCur && lbCur.src" :alt="lbCur && lbCur.title" class="max-w-full max-h-full object-contain select-none">
+    <button type="button" x-show="lb.imgs.length > 1" @click="lbStep(1)" class="absolute right-1 sm:right-3 z-10 w-11 h-11 rounded-full bg-ink/80 border border-slate-600/60 grid place-items-center hover:bg-glow hover:text-ink transition" aria-label="Next image"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+  </div>
+</div>
+
 <!-- Toasts -->
 <div class="fixed bottom-4 inset-x-4 sm:left-auto sm:w-80 z-50 space-y-2 pointer-events-none">
   <template x-for="t in toasts" :key="t.id">
@@ -411,16 +804,22 @@ const CONFIG = {
   SUPABASE_URL:      'https://ppevrugtwkdqmlfqumff.supabase.co',
   SUPABASE_ANON_KEY: 'sb_publishable_JaZe2KrVYK7F11s4kCHBVw_EBUiDJl5',
   BUCKET:            'user_2TA',               // Storage bucket name (must be PUBLIC)
-  MAX_FILE_MB:       50                         // free Supabase plan caps files at 50 MB
+  MAX_FILE_MB:       50,                        // free Supabase plan caps files at 50 MB
+  MAX_IMAGE_MB:      15,                        // per image inside a gallery (JPEG, PNG, GIF, WebP, AVIF)
+  MAX_GROUP_IMAGES:  20                         // images per gallery
 };
 /* Accounts: run supabase/migrations/006_student_accounts.sql, then scripts/seed_students.py (see README_ACCOUNTS.md) BEFORE deploying this file.
    Database setup: run supabase/migrations/001_2iti_structure.sql in the Supabase SQL editor,
    (optionally) 002_legacy_files_template.sql for old files, and deploy supabase/functions/delete-file.
-   The wall (class_posts) is unchanged and still needs its original SQL if not already installed. */
+   The wall (class_posts) is unchanged and now only serves the per-class "الواجبات والملاحظات" pages.
+   شات الدفعة (class chat): run supabase/migrations/008_class_chat.sql (tables, RLS policies, Realtime).
+   Exam schedule: run supabase/migrations/007_exam_schedule.sql, then grant exam-manager rights (see README_EXAM_SCHEDULE.md).
+   شرح يوتيوب: run supabase/migrations/010_youtube_explanations.sql (table youtube_videos, trigger, RLS).
+   Image galleries (several images sent as one group): run supabase/migrations/009_grouped_image_uploads.sql. Until then images still upload, as separate files. */
 
 const configured = /^https:\/\/.+\.supabase\.co/.test(CONFIG.SUPABASE_URL) &&
                    CONFIG.SUPABASE_ANON_KEY.length > 40 && !CONFIG.SUPABASE_ANON_KEY.startsWith('YOUR_');
-let sb = null, wallChannel = null;   // wallChannel lives outside Alpine state (its proxy breaks Supabase objects)   // created in init(), after the deferred Supabase script has loaded
+let sb = null, wallChannel = null, chatChannel = null, chatTimer = 0, chatSeq = 0, chatRaf = 0, chatSubBusy = false;   // wallChannel lives outside Alpine state (its proxy breaks Supabase objects)   // created in init(), after the deferred Supabase script has loaded
 
 /* Storage keys must be plain ASCII, so Arabic (or any other) names are stored as
    "b_" + base64url(UTF-8) and decoded again for display. Plain ASCII names stay readable. */
@@ -500,15 +899,174 @@ const readMineFiles = uid => lsGet('2iti_files:' + uid, {});   // { fileId: secr
 const cmp = (a, b) => dec(a).localeCompare(dec(b));
 const SYNC_MS = 15000;   // how often the site re-checks Supabase for added/removed groups, folders and files
 
+/* ---- Exam schedule helpers: pure functions (no DOM, no Supabase) so they can be unit-tested ---- */
+const EXAM_TITLE_MAX = 120;
+const p2 = n => String(n).padStart(2, '0');
+const localDateKey = d => `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;      // device-local 'YYYY-MM-DD'
+const localMinuteKey = d => `${localDateKey(d)}T${p2(d.getHours())}:${p2(d.getMinutes())}`;
+const normTime = t => { const m = /^(\d{2}):(\d{2})/.exec(t || ''); return m ? m[1] + ':' + m[2] : ''; };   // '09:30:00' -> '09:30', null -> ''
+const normExam = x => ({ id: x.id, class_code: x.class_code, title: x.title, exam_date: String(x.exam_date).slice(0, 10), exam_time: normTime(x.exam_time) });
+const parseYMD = s => { const [y, m, d] = String(s).split('-').map(Number); return new Date(y, m - 1, d); };
+/* Sort key. No time given -> the date alone decides (treated as the start of that day). */
+const examKey = e => `${e.exam_date}T${normTime(e.exam_time) || '00:00'}`;
+/* Past = start time already passed. An exam with no time stays "upcoming" for the whole of its date. */
+const isPastExam = (e, now = new Date()) => normTime(e.exam_time) ? examKey(e) < localMinuteKey(now) : e.exam_date < localDateKey(now);
+const byExamKey = (a, b) => {
+  const x = examKey(a), y = examKey(b);
+  return x < y ? -1 : x > y ? 1 : (a.title || '').localeCompare(b.title || '', 'ar') || String(a.id).localeCompare(String(b.id));
+};
+/* upcoming: nearest first.  past: most recent first (so the freshest history is on top). */
+function sortExams(list, now = new Date()) {
+  const upcoming = [], past = [];
+  for (const e of list) (isPastExam(e, now) ? past : upcoming).push(e);
+  upcoming.sort(byExamKey); past.sort((a, b) => byExamKey(b, a));
+  return { upcoming, past };
+}
+function validateExam(f) {   // returns an Arabic error message, or '' when valid
+  const title = (f.title || '').trim();
+  if (!title) return 'اكتب اسم الامتحان.';
+  if (title.length > EXAM_TITLE_MAX) return `اسم الامتحان أطول من المسموح (${EXAM_TITLE_MAX} حرف).`;
+  if (!f.date) return 'اختار تاريخ الامتحان.';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(f.date)) return 'التاريخ غير صحيح.';
+  const d = parseYMD(f.date);
+  if (localDateKey(d) !== f.date || d.getFullYear() < 2020 || d.getFullYear() > 2100) return 'التاريخ غير صحيح.';
+  if (f.time && !/^([01]\d|2[0-3]):[0-5]\d$/.test(f.time)) return 'الوقت غير صحيح.';
+  return '';
+}
+
+/* ---- شات الدفعة helpers: pure (no DOM, no Supabase) ---- */
+const CHAT_PAGE = 100, CHAT_MAX = 1000;
+const CHAT_COLS = 'id,client_id,sender_id,sender_name,content,created_at';
+const uuid4 = () => (crypto.randomUUID ? crypto.randomUUID()
+  : '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)));
+/* sent messages by id; messages still being sent (id null) last, in the order they were typed */
+const chatCmp = (a, b) => a.id == null && b.id == null ? new Date(a.created_at) - new Date(b.created_at) : a.id == null ? 1 : b.id == null ? -1 : a.id - b.id;
+const normChat = r => ({ id: Number(r.id), client_id: r.client_id, sender_id: r.sender_id, sender_name: r.sender_name, content: r.content, created_at: r.created_at, state: 'sent', err: '' });
+const isMissing = e => !!e && (['PGRST202', 'PGRST205', '42P01', '42883'].includes(e.code) || /could not find the (function|table)|does not exist/i.test(e.message || ''));
+
+/* ---- Image galleries: images uploaded together share one group id (supabase/migrations/009_grouped_image_uploads.sql).
+   Everything in this block is pure (no component state, no Supabase), so it can be unit-tested on its own. ---- */
+const IMG_TITLE_MAX = 70, IMG_CONCURRENCY = 3, GALLERY_PREVIEW = 6;   // title room for " (20)"; parallel uploads; thumbnails shown before "Show all"
+const IMG_KINDS = {   // the only formats accepted into a gallery (SVG/HEIC/BMP… still upload as ordinary files, as before)
+  jpeg: { mime: 'image/jpeg', exts: ['.jpg', '.jpeg'] }, png: { mime: 'image/png', exts: ['.png'] }, gif: { mime: 'image/gif', exts: ['.gif'] },
+  webp: { mime: 'image/webp', exts: ['.webp'] }, avif: { mime: 'image/avif', exts: ['.avif'] }
+};
+/* The real type comes from the file's first bytes, never from its name or the browser's guess. */
+function sniffBytes(b) {
+  const is = (o, s) => [...s].every((c, i) => b[o + i] === c.charCodeAt(0));
+  if (b.length >= 3 && b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF) return IMG_KINDS.jpeg;
+  if (b.length >= 8 && b[0] === 0x89 && is(1, 'PNG') && b[4] === 0x0D && b[5] === 0x0A && b[6] === 0x1A && b[7] === 0x0A) return IMG_KINDS.png;
+  if (b.length >= 6 && (is(0, 'GIF87a') || is(0, 'GIF89a'))) return IMG_KINDS.gif;
+  if (b.length >= 12 && is(0, 'RIFF') && is(8, 'WEBP')) return IMG_KINDS.webp;
+  if (b.length >= 12 && is(4, 'ftyp') && (is(8, 'avif') || is(8, 'avis'))) return IMG_KINDS.avif;
+  return null;
+}
+const sniffImage = async f => { try { return sniffBytes(new Uint8Array(await f.slice(0, 16).arrayBuffer())); } catch (e) { return null; } };
+const claimsImage = f => /^image\/(jpe?g|png|gif|webp|avif)$/i.test(f.type || '') || /\.(jpe?g|jfif|png|gif|webp|avif)$/i.test(f.name || '');   // says it is a gallery image (the bytes then have to agree)
+const imgExt = (name, kind) => { const m = /\.[A-Za-z0-9]{1,5}$/.exec(name || ''), e = m ? m[0].toLowerCase() : ''; return kind.exts.includes(e) ? e : kind.exts[0]; };
+
+/* Rows of one upload batch (same group_id) become ONE gallery item; every other file stays a plain item. Order is kept (newest first). */
+function groupFiles(files) {
+  const out = [], seen = new Map();
+  for (const f of files) {
+    if (!f.gid) { out.push(f); continue; }
+    let g = seen.get(f.gid);
+    if (!g) { g = { kind: 'group', key: 'g:' + f.gid, id: f.gid, title: f.groupTitle || f.title, by: '', date: f.date, size: 0, mine: false, images: [] }; seen.set(f.gid, g); out.push(g); }
+    g.images.push(f);
+  }
+  for (const g of seen.values()) {
+    g.images.sort((a, b) => (a.gpos || 0) - (b.gpos || 0) || String(a.date).localeCompare(String(b.date)));
+    g.size = g.images.reduce((s, i) => s + (i.size || 0), 0);
+    g.date = g.images.reduce((d, i) => (new Date(i.date) < new Date(d) ? i.date : d), g.images[0].date);   // the message time = when the first image arrived
+    g.mine = g.images.some(i => i.mine);
+    g.by = (g.images.find(i => i.by) || {}).by || '';
+  }
+  return out;
+}
+
+/* Saves a Blob as a normal download under the given name. */
+function saveBlob(blob, name) {
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = name; a.style.display = 'none'; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+/* Fallback: plain link; the ?download=<name> in the URL makes the server send Content-Disposition: attachment. */
+function saveUrl(url, name) {
+  const a = document.createElement('a');
+  a.href = url; a.download = name; a.rel = 'noopener'; a.style.display = 'none';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* Upload one file with real byte progress (fetch cannot report upload progress). Same endpoint, headers and multipart body as supabase-js,
+   so the bucket's storage policies apply exactly as they do for the normal upload. */
+function xhrUpload(url, headers, blob, filename, onProgress, timeoutMs = 600000) {
+  return new Promise((resolve, reject) => {
+    const x = new XMLHttpRequest();
+    x.open('POST', url);
+    for (const [k, v] of Object.entries(headers)) x.setRequestHeader(k, v);
+    x.timeout = timeoutMs;
+    x.upload.onprogress = e => { if (e.lengthComputable && e.total) onProgress(e.loaded / e.total); };
+    x.onload = () => {
+      if (x.status >= 200 && x.status < 300) return resolve();
+      let msg = ''; try { const j = JSON.parse(x.responseText); msg = j.message || j.error || ''; } catch (e) {}
+      const err = new Error(msg || `Upload failed (${x.status})`); err.status = x.status; reject(err);
+    };
+    x.onerror = () => reject(new Error('Failed to fetch'));
+    x.ontimeout = () => reject(new Error('Upload timed out'));
+    x.onabort = () => reject(new Error('Upload cancelled'));
+    const fd = new FormData(); fd.append('cacheControl', '3600'); fd.append('', blob, filename);
+    x.send(fd);
+  });
+}
+/* Small preview thumbnails (decoded one at a time, so 20 phone photos never sit in memory at full size). */
+let thumbChain = Promise.resolve();
+const makeThumb = file => (thumbChain = thumbChain.then(async () => {
+  try {
+    const bmp = await createImageBitmap(file), s = Math.min(1, 360 / Math.max(bmp.width, bmp.height));
+    const w = Math.max(1, Math.round(bmp.width * s)), h = Math.max(1, Math.round(bmp.height * s)), c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const g = c.getContext('2d'); g.fillStyle = '#1e293b'; g.fillRect(0, 0, w, h); g.drawImage(bmp, 0, 0, w, h);
+    if (bmp.close) bmp.close();
+    const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.78));
+    if (blob) return URL.createObjectURL(blob);
+  } catch (e) {}
+  return URL.createObjectURL(file);   // decoder refused it: show the file itself
+}));
+/* ---- شرح يوتيوب: strict link parsing. Returns the 11-char video id, or null for anything that is not a YouTube video link. ---- */
+const YT_ID = /^[A-Za-z0-9_-]{11}$/;
+const parseYouTube = raw => {
+  let s = String(raw || '').trim();
+  if (!s || s.length > 300 || /\s/.test(s)) return null;
+  if (!/^https?:\/\//i.test(s)) { if (/^(www\.|m\.|music\.)?(youtube\.com|youtu\.be)\//i.test(s)) s = 'https://' + s; else return null; }
+  let u; try { u = new URL(s); } catch (e) { return null; }
+  if (u.protocol !== 'https:' && u.protocol !== 'http:') return null;
+  const h = u.hostname.toLowerCase().replace(/^(www|m|music)\./, ''), p = u.pathname.split('/').filter(Boolean);
+  let id = '';
+  if (h === 'youtu.be') id = p[0] || '';
+  else if (h === 'youtube.com' || h === 'youtube-nocookie.com') {
+    if (p[0] === 'watch') id = u.searchParams.get('v') || '';
+    else if (['embed', 'shorts', 'live', 'v'].includes(p[0])) id = p[1] || '';
+  } else return null;
+  return YT_ID.test(id) ? id : null;
+};
+let lbReturn = null;   // element that had focus before the image viewer opened
+
 function twota() {
   return {
-    CONFIG, CLASSES, CATEGORIES, SUBJECTS, demo: !configured, syncOk: true, syncing: false, busy: false,
+    CONFIG, CLASSES, CATEGORIES, SUBJECTS, GALLERY_PREVIEW, demo: !configured, syncOk: true, syncing: false, busy: false,
     active: '', cat: '', subj: '', files: [], search: '', error: '',
     queue: [], uploading: false, done: 0, total: 0, loading: false, refreshing: false,
     drag: false, delKey: '', deleting: false, ownerTag: '', mineFiles: {}, uploaderName: '',
+    imgs: [], imgTitle: '', imgTitleAuto: true, grp: null, imgGen: 0, groupingMissing: false,   // image gallery being prepared / sent
+    openGroups: {}, dlKey: '', dlDone: 0, dlTotal: 0, lb: { open: false, title: '', imgs: [], i: 0 },   // gallery cards, Download All, image viewer
     view: 'files', postsScope: '', posts: [], postsLoading: false, postsError: '', postName: '', postText: '', posting: false, lastPost: 0, wallLoaded: false,
     mine: {}, formError: '', editId: '', editText: '', editError: '', savingEdit: false, delId: '',
     toasts: [], memory: {}, cache: {}, req: 0,
+    chatMsgs: [], chatLoaded: false, chatLoading: false, chatError: '', chatText: '', chatHasMore: false, chatLoadingOlder: false,
+    chatUnread: 0, chatLive: false, chatMissing: false, chatAtBottom: true, chatDividerId: 0, chatReadLocal: 0, chatReadSent: 0, chatDemoSeq: 0,
+    ytVideos: [], ytLoaded: false, ytLoading: false, ytListError: '', ytUrl: '', ytTitle: '', ytError: '', ytSaving: false, ytPlaying: {}, ytMissing: false, ytDemoSeq: 0,
+    examsByClass: {}, examsLoading: false, examsError: '', examDelId: '', examBusy: false, examReq: 0, managerClasses: [], tick: Date.now(),
+    examForm: { open: false, mode: 'add', id: '', cls: '', title: '', date: '', time: '', error: '', saving: false },
     ready: false, profile: null, loginUser: '', loginPass: '', showPass: false, loggingIn: false, loginError: '', fails: 0, lockUntil: 0,
 
     async init() {
@@ -518,6 +1076,10 @@ function twota() {
       let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => lucide.createIcons(), 40); })
         .observe(document.body, { childList: true, subtree: true });
       lucide.createIcons();
+      this.$watch('view', (v, old) => { if (old === 'chat') this.chatDividerId = 0; });   // the "unread" divider only lives for one visit
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) this.chatMeasure(); });   // coming back to a visible chat = reading it
+      window.addEventListener('focus', () => this.chatMeasure());
+      setInterval(() => { this.tick = Date.now(); }, 30000);   // exam list re-sorts itself when an exam's time passes
       if (sb) {   // no push events for this list, so poll while the tab is visible + re-check on focus
         const go = () => this.sync();
         setInterval(go, SYNC_MS);
@@ -563,10 +1125,12 @@ function twota() {
         }
         this.profile = data; this.uploaderName = data.full_name;
       }
+      if (sb && user) await this.loadManagerClasses();
       adoptLegacy(this.uid);
       this.mine = readMine(this.uid); this.mineFiles = readMineFiles(this.uid);
       this.ownerTag = await getOwnerTag(this.uid);
       this.retryPendingNotifies();
+      this.chatStart();   // unread badge + Realtime subscription (fire-and-forget; never blocks sign-in)
       return true;
     },
     async login() {
@@ -602,20 +1166,27 @@ function twota() {
     },
     clearSession() {
       this.profile = null; this.mine = {}; this.mineFiles = {}; this.ownerTag = ''; this.uploaderName = '';
-      this.posts = []; this.files = []; this.cache = {}; this.queue = []; this.req++;
+      this.posts = []; this.files = []; this.cache = {}; this.queue = []; this.clearImgs(); this.closeLightbox(); this.req++;
       this.active = ''; this.cat = ''; this.subj = ''; this.view = 'files';
       this.wallLoaded = false; this.postsScope = ''; this.postText = ''; this.editId = ''; this.delId = '';
       if (wallChannel && sb) { try { sb.removeChannel(wallChannel); } catch (e) {} }
       wallChannel = null;
+      if (chatChannel && sb) { try { sb.removeChannel(chatChannel); } catch (e) {} }
+      chatChannel = null; clearTimeout(chatTimer); chatSeq++;
+      this.chatMsgs = []; this.chatLoaded = false; this.chatLoading = false; this.chatError = ''; this.chatText = ''; this.chatHasMore = false;
+      this.chatUnread = 0; this.chatLive = false; this.chatMissing = false; this.chatAtBottom = true; this.chatDividerId = 0; this.chatReadLocal = 0; this.chatReadSent = 0;
+      this.ytVideos = []; this.ytLoaded = false; this.ytLoading = false; this.ytListError = ''; this.ytUrl = ''; this.ytTitle = ''; this.ytError = ''; this.ytSaving = false; this.ytPlaying = {}; this.ytMissing = false;
+      this.examsByClass = {}; this.managerClasses = []; this.examDelId = ''; this.examsError = ''; this.examReq++;
+      this.examForm = { open: false, mode: 'add', id: '', cls: '', title: '', date: '', time: '', error: '', saving: false };
     },
     openProfile() { if (this.profile) this.view = 'profile'; },
 
     /* ---------- helpers ---------- */
     path() { return `${this.active}/${this.cat}/${this.subj}`; },
-    get showWall() { return this.view === 'wall' || (this.view === 'files' && !!this.active && this.cat === 'homework_notes'); },
-    get wallClass() { return this.view === 'wall' ? '' : this.active; },   // '' = original shared wall (posts without a class)
-    get wallTitle() { return this.view === 'wall' ? 'مجتمع سيكوندا' : 'الواجبات والملاحظات — ' + this.active; },
-    get catName() { return (CATEGORIES.find(c => c.id === this.cat) || {}).name || ''; },
+    get showWall() { return this.view === 'files' && !!this.active && this.cat === 'homework_notes'; },
+    get wallClass() { return this.active; },
+    get wallTitle() { return 'الواجبات والملاحظات — ' + this.active; },
+    get catName() { return this.cat === 'exams' ? 'جدول الامتحانات' : (CATEGORIES.find(c => c.id === this.cat) || {}).name || ''; },
     get subjName() { return (SUBJECTS.find(s => s.id === this.subj) || {}).name || ''; },
     get location() { return this.subj ? `${this.active} / ${this.catName} / ${this.subjName}` : ''; },
     fmtSize(b) {
@@ -625,6 +1196,7 @@ function twota() {
       return b.toFixed(i ? 1 : 0) + ' ' + u[i];
     },
     fmtDate(d) { const x = new Date(d); return isNaN(x) ? '—' : x.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }); },
+    fmtDateTime(d) { const x = new Date(d); return isNaN(x) ? '—' : x.toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' }); },
     badge(ext) {
       const hues = { pdf: 350, doc: 215, docx: 215, ppt: 25, pptx: 25, xls: 150, xlsx: 150, zip: 45, rar: 45, mp4: 280, mov: 280, mp3: 300, png: 175, jpg: 175, jpeg: 175, gif: 175, txt: 200 };
       const h = hues[ext] ?? 200;
@@ -635,15 +1207,15 @@ function twota() {
       this.toasts.push({ id, msg, type });
       setTimeout(() => this.toasts = this.toasts.filter(t => t.id !== id), 4500);
     },
-    get filtered() {
-      const q = this.search.trim().toLowerCase();
-      return q ? this.files.filter(f => f.title.toLowerCase().includes(q)) : this.files;
+    get filtered() {   // plain files + one gallery item per image group
+      const q = this.search.trim().toLowerCase(), items = groupFiles(this.files);
+      return q ? items.filter(f => f.title.toLowerCase().includes(q)) : items;
     },
-    reset() { this.search = ''; this.queue = []; this.delKey = ''; this.files = []; this.error = ''; this.loading = false; this.req++; },
+    reset() { this.search = ''; this.queue = []; this.clearImgs(); this.openGroups = {}; this.delKey = ''; this.files = []; this.error = ''; this.loading = false; this.req++; },
 
     /* ---------- navigation: class -> category -> subject ---------- */
-    async selectClass(c) { this.view = 'files'; this.active = c; this.cat = ''; this.subj = ''; this.reset(); },
-    async selectCat(c) { this.view = 'files'; this.cat = c; this.subj = ''; this.reset(); if (c === 'homework_notes') await this.switchWall(); },
+    async selectClass(c) { this.view = 'files'; this.active = c; this.cat = ''; this.subj = ''; this.reset(); this.examDelId = ''; this.examForm.open = false; if (c && this.canViewClassExams(c)) this.loadExams(c, true); },
+    async selectCat(c) { this.view = 'files'; this.cat = c; this.subj = ''; this.reset(); this.examDelId = ''; if (c === 'homework_notes') await this.switchWall(); else if (c === 'exams') { this.examsError = ''; await this.loadExams(this.active); } },
     async selectSubj(s) { this.view = 'files'; this.subj = s; this.reset(); await this.loadFiles(); },
     goUp() { if (this.subj) this.selectCat(this.cat); else if (this.cat) this.selectClass(this.active); else this.selectClass(''); },
 
@@ -653,6 +1225,9 @@ function twota() {
       try {
         if (this.showWall) await this.loadPosts(true);
         else if (this.subj) await this.loadFiles(true);
+        else if (this.cat === 'exams' && this.active) await this.loadExams(this.active, true);
+        if (this.view === 'chat') await this.chatCatchUp();   // chat: fill gaps if Realtime dropped something
+        await this.chatPushState();                            // chat: re-check the unread badge with the server
       } finally { this.syncing = false; }
     },
 
@@ -667,8 +1242,10 @@ function twota() {
       const run = cols => sb.from('class_files').select(cols)
         .eq('class_code', this.active).eq('category_code', this.cat).eq('subject_code', this.subj)
         .order('created_at', { ascending: false }).limit(500);
-      let { data, error } = await run(base + ',uploader_name');
-      if (error && (error.code === '42703' || /uploader_name/i.test(error.message || ''))) ({ data, error } = await run(base));   // migration 006 not applied yet
+      const colErr = e => !!e && (e.code === '42703' || /uploader_name|group_/i.test(e.message || ''));
+      let { data, error } = await run(base + ',uploader_name,group_id,group_pos,group_title');
+      if (colErr(error)) ({ data, error } = await run(base + ',uploader_name'));   // migration 009 not applied yet (no galleries)
+      if (colErr(error)) ({ data, error } = await run(base));                       // migration 006 not applied yet
       if (token !== this.req || path !== this.path()) return;   // user navigated elsewhere meanwhile
       this.loading = false;
       if (error) { this.syncOk = false; if (!silent) { this.files = []; this.error = this.explain(error); } return; }
@@ -678,7 +1255,9 @@ function twota() {
         key: x.id, by: x.uploader_name || '', title: x.title, name: x.original_name, ext: x.ext || '', size: x.size_bytes, date: x.created_at,
         // own upload (secret token kept in this browser), or a migrated legacy file tagged with this browser's old owner tag
         mine: !!this.mineFiles[x.id] || (!x.owner_hash && !!x.owner_tag && x.owner_tag === this.ownerTag),
-        url: bucket.getPublicUrl(x.storage_path, { download: x.original_name }).data.publicUrl
+        url: bucket.getPublicUrl(x.storage_path, { download: x.original_name }).data.publicUrl,
+        src: bucket.getPublicUrl(x.storage_path).data.publicUrl,   // for <img> and the viewer (no forced-download header)
+        gid: x.group_id || '', gpos: x.group_pos || 0, groupTitle: x.group_title || ''
       }));
       this.cache[path] = files; this.files = files;
     },
@@ -693,23 +1272,36 @@ function twota() {
       if (!this.subj) return this.toast('Choose a class, category and subject first.', 'error');
       this.$refs.picker.click();
     },
-    pick(list) {
+    async pick(list) {
       if (!this.subj) return this.toast('Choose a class, category and subject first.', 'error');
-      const max = CONFIG.MAX_FILE_MB * 1048576;
-      const files = Array.from(list || []);
+      const max = CONFIG.MAX_FILE_MB * 1048576, maxImg = CONFIG.MAX_IMAGE_MB * 1048576;
+      const files = Array.from(list || []);   // copy right away: the input is cleared as soon as this call returns its first promise
       if (!files.length) return this.toast('No file selected.', 'error');
+      let full = 0;
       for (const f of files) {
-        if (f.size === 0) this.toast(`"${f.name}" is empty and was skipped.`, 'error');
+        if (f.size === 0) { this.toast(`"${f.name}" is empty and was skipped.`, 'error'); continue; }
+        const kind = await sniffImage(f);   // what the bytes say, not the name
+        if (kind) {   // a real JPEG / PNG / GIF / WebP / AVIF -> goes into the gallery preview
+          const sig = `${f.name}|${f.size}|${f.lastModified}`;
+          if (this.imgs.some(m => m.sig === sig)) this.toast(`"${f.name}" is already in the list.`, 'error');
+          else if (f.size > maxImg) this.toast(`"${f.name}" is over ${CONFIG.MAX_IMAGE_MB} MB (images in a gallery).`, 'error');
+          else if (this.imgs.length >= CONFIG.MAX_GROUP_IMAGES) full++;
+          else this.addImg(f, kind, sig);
+        } else if (claimsImage(f)) this.toast(`"${f.name}" is not a valid JPEG, PNG, GIF, WebP or AVIF image (it may be corrupted or renamed).`, 'error');
         else if (f.size > max) this.toast(`"${f.name}" is over ${CONFIG.MAX_FILE_MB} MB.`, 'error');
         else this.queue.push({ id: Date.now() + Math.random(), file: f, title: f.name.replace(/\.[^.]*$/, '').slice(0, 80) });
       }
+      if (full) this.toast(`A gallery holds up to ${CONFIG.MAX_GROUP_IMAGES} images — ${full} skipped.`, 'error');
     },
     async upload() {
       if (!this.active || !this.cat || !this.subj) return this.toast('Choose a class, category and subject first.', 'error');
-      if (!this.queue.length) return this.toast('Choose at least one file.', 'error');
+      const pend = this.imgPending;   // images not saved yet (after a partial failure only the failed ones remain)
+      if (!this.queue.length && !pend.length) return this.toast('Choose at least one file.', 'error');
       if (this.queue.some(q => !q.title.trim())) return this.toast('Type a display name for every file.', 'error');
+      if (pend.length && !this.imgTitle.trim()) return this.toast('Type a display name for the images.', 'error');
       if (!this.authed) return this.toast('سجّل دخول الأول.', 'error');
-      this.uploading = true; this.done = 0; this.total = this.queue.length;
+      if (this.uploading) return;
+      this.uploading = true; this.done = 0; this.total = this.queue.length + pend.length;
       const path = this.path(), cls = this.active, cat = this.cat, subj = this.subj; let ok = 0;
       for (const q of this.queue) {
         const f = q.file, title = q.title.trim();
@@ -734,10 +1326,192 @@ function twota() {
         } catch (e) { this.toast(`"${q.title}" failed: ${this.explain(e)}`, 'error'); }
         this.done++;
       }
-      this.uploading = false; this.queue = [];
+      this.queue = [];
+      if (pend.length) ok += await this.uploadImages(pend, { path, cls, cat, subj });
+      this.uploading = false;
       if (ok) this.toast(`${ok} file${ok > 1 ? 's' : ''} uploaded.`);
       delete this.cache[path];
       if (path === this.path()) await this.loadFiles();
+    },
+
+    /* ---------- image galleries: several images, one grouped message ---------- */
+    get imgBytes() { return this.imgs.reduce((s, m) => s + m.size, 0); },
+    get imgFailed() { return this.imgs.filter(m => m.stage === 'error'); },
+    get imgPending() { return this.imgs.filter(m => m.stage !== 'done'); },
+    get overallPct() {   // finished files count fully, files in flight by their bytes
+      const t = this.total || 1; let acc = this.done;
+      for (const m of this.imgs) if (m.stage === 'uploading' || m.stage === 'registering' || m.stage === 'grouping') acc += Math.min(0.95, (m.pct || 0) / 100);
+      return Math.min(100, Math.round(100 * acc / t));
+    },
+    get uploadLabel() {
+      if (this.uploading) return `Uploading ${this.done}/${this.total}…`;
+      const n = this.queue.length + this.imgPending.length;
+      if (this.imgFailed.length) return `Retry ${n} file${n > 1 ? 's' : ''}`;
+      if (!this.queue.length && this.imgs.length > 1) return `Send ${this.imgs.length} images as one gallery`;
+      return `Upload ${n} file${n > 1 ? 's' : ''}`;
+    },
+    openImgPicker() {
+      if (!this.subj) return this.toast('Choose a class, category and subject first.', 'error');
+      this.$refs.imgPicker.click();
+    },
+    addImg(f, kind, sig) {
+      const m = { id: Date.now() + Math.random(), file: f, sig, name: f.name, size: f.size, mime: kind.mime, ext: imgExt(f.name, kind), pos: null, thumb: '',
+                  stage: 'ready', pct: 0, err: '', path: '', token: '', fileId: null, grouped: false };
+      if (!this.imgs.length && this.imgTitleAuto) this.imgTitle = f.name.replace(/\.[^.]*$/, '').slice(0, 80);   // same default name as a single file
+      this.imgs.push(m);
+      makeThumb(f).then(url => { const cur = this.imgs.find(x => x.id === m.id); if (cur) cur.thumb = url; else URL.revokeObjectURL(url); });
+    },
+    removeImg(m) {
+      if (this.uploading) return;
+      const i = this.imgs.findIndex(x => x.id === m.id); if (i < 0) return;
+      if (this.imgs[i].thumb) URL.revokeObjectURL(this.imgs[i].thumb);
+      this.imgs.splice(i, 1);
+      if (!this.imgs.length || this.imgs.every(x => x.stage === 'done')) this.clearImgs();   // nothing left to send
+    },
+    clearImgs() {
+      for (const m of this.imgs) if (m.thumb) URL.revokeObjectURL(m.thumb);
+      this.imgs = []; this.imgTitle = ''; this.imgTitleAuto = true; this.grp = null; this.imgGen++;
+    },
+    /* Sends every not-yet-uploaded image. Each image moves through: bytes -> storage, row -> register_file, link -> attach_file_to_group.
+       A failure only marks THAT image; finished images stay saved, and a retry resumes each image at the step it stopped at. */
+    async uploadImages(items, ctx) {
+      const gen = this.imgGen, grouped = !!this.grp || this.imgs.length > 1;
+      if (grouped && !this.grp) this.grp = { id: uuid4(), title: this.imgTitle.trim().slice(0, IMG_TITLE_MAX), next: 0, notified: false };   // the name is frozen with the gallery
+      if (grouped) for (const m of items) if (m.pos == null) m.pos = this.grp.next++;                                                         // picture number = order of selection
+      const grp = grouped ? this.grp : null, single = this.imgTitle.trim().slice(0, 80), todo = items.slice();
+      let ok = 0, failed = 0;
+      const worker = async () => {
+        while (todo.length) {
+          const m = todo.shift();
+          try { await this.sendImg(m, ctx, grp, single); ok++; }
+          catch (e) { m.stage = 'error'; m.err = this.explainImg(e); failed++; console.error('Image upload failed:', e); }
+          this.done++;
+        }
+      };
+      await Promise.all(Array.from({ length: Math.min(IMG_CONCURRENCY, todo.length) }, worker));
+      if (failed) this.toast(`${failed} image${failed > 1 ? 's' : ''} failed${ok ? ` — the other ${ok} ${ok > 1 ? 'are' : 'is'} saved` : ''}. Retry, or remove the failed ${failed > 1 ? 'ones' : 'one'}.`, 'error');
+      if (gen === this.imgGen && this.imgs.length && this.imgs.every(m => m.stage === 'done')) this.clearImgs();   // all sent: reset the picker
+      return ok;
+    },
+    async sendImg(m, ctx, grp, single) {
+      const title = grp ? `${grp.title} (${m.pos + 1})` : single;
+      m.err = ''; m.pct = m.path ? 100 : 0;
+      if (!sb) {   // demo mode: everything stays in memory
+        const u = URL.createObjectURL(m.file);
+        (this.memory[ctx.path] ||= []).unshift({ key: crypto.randomUUID(), title, name: title + m.ext, size: m.size, date: new Date().toISOString(), ext: m.ext.slice(1), mine: true,
+          by: this.authorLabel, url: u, src: u, gid: grp ? grp.id : '', gpos: m.pos || 0, groupTitle: grp ? grp.title : '' });
+        m.stage = 'done'; m.pct = 100; return;
+      }
+      if (!m.path) {   // 1. the bytes -> storage (skipped on a retry when they already arrived)
+        m.stage = 'uploading'; m.pct = 0;
+        const storagePath = `${ctx.path}/${Date.now()}-${randHex(4)}${m.ext}`;
+        await this.putImage(storagePath, m);
+        m.path = storagePath; m.pct = 100;
+      }
+      if (!m.fileId) {   // 2. database row: the very same register_file call (and permission check) as every other upload
+        m.stage = 'registering'; m.token = m.token || randHex(16);
+        let { data, error } = await sb.rpc('register_file', { p_class: ctx.cls, p_category: ctx.cat, p_subject: ctx.subj, p_title: title,
+          p_name: title + m.ext, p_size: m.size, p_path: m.path, p_token: m.token });
+        let row = Array.isArray(data) ? data[0] : data;
+        if (error && (error.code === '23505' || /duplicate/i.test(error.message || ''))) {   // an earlier try went through but its answer got lost: pick that row up
+          const q = await sb.from('class_files').select('id').eq('storage_path', m.path).maybeSingle();
+          if (q.data) { row = q.data; error = null; }
+        }
+        if (error) throw error;
+        m.fileId = row.id;
+        this.mineFiles = { ...this.mineFiles, [row.id]: m.token }; lsSet('2iti_files:' + this.uid, this.mineFiles);   // delete rights stay in this browser, as for any file
+      }
+      if (grp && !m.grouped) {   // 3. link the row to its gallery (the server checks that it is yours and in the same folder)
+        if (!this.groupingMissing) {
+          m.stage = 'grouping';
+          const { error } = await sb.rpc('attach_file_to_group', { p_path: m.path, p_group: grp.id, p_title: grp.title, p_pos: m.pos });
+          if (error && isMissing(error)) { this.groupingMissing = true; this.toast('Galleries are not enabled on the server yet (run supabase/migrations/009_grouped_image_uploads.sql). The images were saved as separate files.', 'error'); }
+          else if (error) throw error;
+        }
+        m.grouped = true;
+      }
+      if (!grp || !grp.notified) { if (grp) grp.notified = true; this.notifyTelegram(m.fileId, this.profile ? this.profile.full_name : ''); }   // one Telegram message per gallery, not per picture
+      m.stage = 'done'; m.pct = 100;
+    },
+    async putImage(storagePath, m) {
+      const blob = new Blob([m.file], { type: m.mime });   // the type found in the file's bytes, not the browser's guess
+      let token = '';
+      try { const { data } = await sb.auth.getSession(); token = (data && data.session && data.session.access_token) || ''; } catch (e) {}
+      if (!token) {   // nothing to sign a raw request with: let supabase-js upload it (no byte progress)
+        const up = await sb.storage.from(CONFIG.BUCKET).upload(storagePath, blob, { contentType: m.mime, upsert: false });
+        if (up.error) throw up.error;
+        return;
+      }
+      const url = `${CONFIG.SUPABASE_URL.replace(/\/+$/, '')}/storage/v1/object/${encodeURIComponent(CONFIG.BUCKET)}/${storagePath.split('/').map(encodeURIComponent).join('/')}`;
+      await xhrUpload(url, { Authorization: 'Bearer ' + token, apikey: CONFIG.SUPABASE_ANON_KEY, 'x-upsert': 'false' }, blob, 'image' + m.ext, p => { m.pct = Math.round(p * 100); });
+    },
+    explainImg(e) {
+      const m = (e?.message || String(e)).toLowerCase();
+      if (m.includes('group_full')) return 'This gallery already has the maximum number of images.';
+      if (m.includes('bad_group') || m.includes('already_grouped')) return 'The image could not be added to the gallery.';
+      if (m.includes('not_found')) return 'The server could not find the uploaded image. Retry.';
+      if (m.includes('not_a_student') || m.includes('not_authenticated')) return 'سجّل دخول تاني.';
+      if (m.includes('not_allowed') || m.includes('forbidden') || m.includes('wrong_class') || m.includes('permission denied')) return 'You do not have permission to upload to this folder.';
+      if (e?.status === 413 || m.includes('exceeded') || m.includes('too large') || m.includes('payload')) return 'The image is larger than your Supabase limit.';
+      if (e?.status === 415 || m.includes('mime type')) return 'The storage bucket does not accept this image type.';
+      if (m.includes('timed out')) return 'The upload timed out. Check your connection and retry.';
+      if (m.includes('cancelled')) return 'The upload was cancelled. Retry.';
+      return this.explain(e);
+    },
+
+    /* gallery cards in the file list */
+    visibleImages(g) { return this.openGroups[g.key] ? g.images : g.images.slice(0, GALLERY_PREVIEW); },
+    get lbCur() { return this.lb.imgs[this.lb.i] || null; },
+    openLightbox(g, i) {
+      this.lb = { open: true, title: g.title, imgs: g.images.slice(), i };
+      lbReturn = document.activeElement; document.documentElement.style.overflow = 'hidden';
+      this.$nextTick(() => { const b = this.$refs.lbClose; if (b) b.focus(); });
+    },
+    closeLightbox() {
+      this.lb = { open: false, title: '', imgs: [], i: 0 }; document.documentElement.style.overflow = '';
+      if (lbReturn && lbReturn.focus) { try { lbReturn.focus(); } catch (e) {} } lbReturn = null;
+    },
+    lbStep(d) { const n = this.lb.imgs.length; if (n) this.lb.i = (this.lb.i + d + n) % n; },
+    /* "Download All": one normal download per image (original file, original format), one after another.
+       Each image is fetched first and saved from a local copy: that is what browsers accept as several separate downloads
+       (rapid links to another site get cancelled). The first time, Chrome/Edge ask to allow multiple downloads: tap Allow. */
+    async downloadAll(g) {
+      if (this.dlKey || !g.images.length) return;
+      this.dlKey = g.key; this.dlDone = 0; this.dlTotal = g.images.length;
+      let viaLink = 0;
+      try {
+        for (const im of g.images) {
+          try { const r = await fetch(im.src); if (!r.ok) throw new Error('HTTP ' + r.status); saveBlob(await r.blob(), im.name); }
+          catch (e) { saveUrl(im.url, im.name); viaLink++; }   // could not fetch (CORS/network): fall back to the plain download link
+          this.dlDone++;
+          if (this.dlDone < this.dlTotal) await new Promise(r => setTimeout(r, 800));
+        }
+        this.toast(`Started ${g.images.length} download${g.images.length > 1 ? 's' : ''}. If only the first one saved, allow "multiple downloads" for this site in your browser and press the button again.`);
+      } finally { this.dlKey = ''; }
+    },
+    async removeGroup(g) {   // deletes every image of the gallery that this browser owns, one server-checked delete each (same function as a single file)
+      const mine = g.images.filter(i => i.mine);
+      if (!mine.length || this.deleting) return;
+      this.deleting = true; this.delKey = '';
+      const path = this.path(), gone = new Set(), rest = { ...this.mineFiles }; let lastErr = null;
+      try {
+        for (const im of mine) {
+          try {
+            if (sb) {
+              const { data, error } = await sb.functions.invoke('delete-file', { body: { id: im.key, token: this.mineFiles[im.key] || '', owner_tag: this.ownerTag } });
+              if (error || (data && data.error)) throw new Error((data && data.error) || error.message || 'delete_blocked');
+              delete rest[im.key];
+            } else this.memory[path] = (this.memory[path] || []).filter(x => x.key !== im.key);
+            gone.add(im.key);
+          } catch (e) { lastErr = e; }
+        }
+      } finally {
+        this.mineFiles = rest; lsSet('2iti_files:' + this.uid, rest);
+        this.files = this.files.filter(x => !gone.has(x.key));
+        delete this.cache[path]; this.deleting = false;
+      }
+      if (gone.size === mine.length) this.toast(gone.size > 1 ? 'تم حذف الصور.' : 'تم حذف الصورة.');
+      else this.toast(`Deleted ${gone.size} of ${mine.length} images. ${this.explain(lastErr)}`, 'error');
     },
 
     /* ---------- Telegram notification (server does all the work; the browser only says "file X was registered") ---------- */
@@ -781,9 +1555,403 @@ function twota() {
     },
 
 
-    /* ---------- class wall (table: class_posts) ---------- */
-    async openWall() { this.view = 'wall'; await this.switchWall(); },
-    async switchWall() {   // same forum, scoped to the original wall or to one class
+    /* ---------- exam schedule (tables: class_exams, exam_managers; writes only via RPC create_exam / update_exam / delete_exam) ---------- */
+    async loadManagerClasses() {   // which classes this account may manage; failure (e.g. migration 007 not run) just means "none"
+      try {
+        const { data, error } = await sb.from('exam_managers').select('class_code');
+        this.managerClasses = error ? [] : (data || []).map(r => String(r.class_code).trim().toUpperCase());
+      } catch (e) { this.managerClasses = []; }
+    },
+    canViewClassExams(c) {   // UI mirror of the RLS policy (the server enforces the real rule)
+      if (!c) return false;
+      if (this.demo) return true;
+      const mine = this.profile ? String(this.profile.class_code || '').trim().toUpperCase() : '';
+      return !!this.profile && (mine === c || this.managerClasses.includes(c));
+    },
+    canManageClassExams(c) { return !!c && (this.demo || (!!this.profile && this.managerClasses.includes(c))); },
+    get canViewExams() { return this.canViewClassExams(this.active); },
+    get canManageExams() { return this.canManageClassExams(this.active); },
+    get examsLoaded() { return !!this.examsByClass[this.active]; },
+    get examLists() { void this.tick; return sortExams(this.examsByClass[this.active] || [], new Date()); },
+    get examItems() {   // flat list for rendering: heading, exams, heading, exams
+      const { upcoming, past } = this.examLists, out = [];
+      if (upcoming.length) {
+        out.push({ kind: 'h', key: 'h-up', label: 'الامتحانات القادمة', n: upcoming.length });
+        upcoming.forEach((e, i) => out.push({ kind: 'e', key: e.id, e, past: false, next: i === 0 }));
+      }
+      if (past.length) {
+        out.push({ kind: 'h', key: 'h-past', label: 'امتحانات انتهت', n: past.length });
+        past.forEach(e => out.push({ kind: 'e', key: e.id, e, past: true, next: false }));
+      }
+      return out;
+    },
+    get examCardHint() {
+      if (!this.active) return '';
+      if (!this.canViewExams) return 'متاح لطلاب الفصل ده بس';
+      const list = this.examsByClass[this.active];
+      if (!list) return 'جدول امتحانات ' + this.active;
+      const next = sortExams(list, new Date(this.tick)).upcoming[0];
+      return next ? 'الجاي: ' + next.title + ' · ' + this.fmtExamDate(next) : (list.length ? 'كل الامتحانات المضافة عدّت' : 'مفيش امتحانات مضافة لسه');
+    },
+    fmtExamDate(e) { return parseYMD(e.exam_date).toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); },
+    fmtExamTime(e) { const [h, m] = normTime(e.exam_time).split(':').map(Number); return new Date(2000, 0, 1, h, m).toLocaleTimeString('ar-EG', { hour: 'numeric', minute: '2-digit', hour12: true }); },
+    examDay(e) { return Number(e.exam_date.slice(8, 10)).toLocaleString('ar-EG'); },
+    examMonth(e) { return parseYMD(e.exam_date).toLocaleDateString('ar-EG', { month: 'short' }); },
+    examBadge(e) {
+      const now = new Date(this.tick);
+      if (isPastExam(e, now)) return 'انتهى';
+      const days = Math.round((parseYMD(e.exam_date) - parseYMD(localDateKey(now))) / 86400000);
+      return new Intl.RelativeTimeFormat('ar-EG', { numeric: 'auto' }).format(days, 'day');   // اليوم / غدًا / خلال ٣ أيام
+    },
+    async loadExams(cls = this.active, silent = false) {
+      if (!cls || !this.canViewClassExams(cls)) return;
+      if (!sb) { if (!this.examsByClass[cls]) this.examsByClass = { ...this.examsByClass, [cls]: [] }; return; }   // demo: memory only
+      const tok = this.examReq;
+      if (!silent) { this.examsError = ''; this.examsLoading = !this.examsByClass[cls]; }
+      const { data, error } = await sb.from('class_exams').select('id,class_code,title,exam_date,exam_time').eq('class_code', cls)
+        .order('exam_date', { ascending: true }).order('exam_time', { ascending: true, nullsFirst: true }).limit(500);
+      this.examsLoading = false;
+      if (tok !== this.examReq) return;           // an add/edit/delete finished meanwhile: this answer may be stale
+      if (error) { if (!silent && cls === this.active) this.examsError = this.explainExams(error); return; }
+      this.examsByClass = { ...this.examsByClass, [cls]: (data || []).map(normExam) };
+    },
+    async refreshExams() { await this.loadExams(this.active); if (!this.examsError) this.toast('تم التحديث.'); },
+    openExamForm(e = null) {
+      const cls = this.active;
+      if (!this.canManageClassExams(cls)) return this.toast('مش مسموح لك تعدّل جدول الامتحانات.', 'error');
+      this.examDelId = '';
+      this.examForm = e ? { open: true, mode: 'edit', id: e.id, cls, title: e.title, date: e.exam_date, time: normTime(e.exam_time), error: '', saving: false }
+                        : { open: true, mode: 'add', id: '', cls, title: '', date: '', time: '', error: '', saving: false };
+      this.$nextTick(() => this.$refs.examTitle && this.$refs.examTitle.focus());
+    },
+    closeExamForm() { if (!this.examForm.saving) this.examForm.open = false; },
+    async saveExam() {
+      const f = this.examForm; if (f.saving) return;
+      const cls = f.cls;
+      if (!this.canManageClassExams(cls)) { f.error = 'مش مسموح لك تعدّل جدول الامتحانات.'; return; }
+      const err = validateExam(f); if (err) { f.error = err; return; }
+      const title = f.title.trim(), time = f.time || null, edit = f.mode === 'edit';
+      f.error = ''; f.saving = true; this.examReq++; this.busy = true;
+      try {
+        let row;
+        if (sb) {
+          const { data, error } = edit ? await sb.rpc('update_exam', { p_id: f.id, p_title: title, p_date: f.date, p_time: time })
+                                       : await sb.rpc('create_exam', { p_class: cls, p_title: title, p_date: f.date, p_time: time });
+          if (error) {
+            f.error = this.explainExams(error);
+            if (/not_found/i.test(error.message || '')) { this.dropExam(cls, f.id); f.open = false; }   // deleted by someone else meanwhile
+            return;
+          }
+          row = normExam(Array.isArray(data) ? data[0] : data);
+        } else row = { id: edit ? f.id : crypto.randomUUID(), class_code: cls, title, exam_date: f.date, exam_time: normTime(time) };
+        this.examsByClass = { ...this.examsByClass, [cls]: [...(this.examsByClass[cls] || []).filter(x => x.id !== row.id), row] };   // order is recomputed by sortExams
+        this.examForm = { open: false, mode: 'add', id: '', cls: '', title: '', date: '', time: '', error: '', saving: false };
+        this.toast(edit ? 'تم حفظ التعديل ✅' : 'تمت إضافة الامتحان ✅');
+      } catch (e) { f.error = this.explainExams(e); }
+      finally { f.saving = false; this.busy = false; this.examReq++; }
+    },
+    dropExam(cls, id) { this.examsByClass = { ...this.examsByClass, [cls]: (this.examsByClass[cls] || []).filter(x => x.id !== id) }; },
+    async removeExam(e) {
+      if (this.examBusy) return;
+      const cls = this.active; this.examDelId = '';
+      if (!this.canManageClassExams(cls)) return this.toast('مش مسموح لك تحذف امتحانات.', 'error');
+      this.examBusy = true; this.busy = true; this.examReq++;
+      try {
+        if (sb) {
+          const { error } = await sb.rpc('delete_exam', { p_id: e.id });
+          if (error && !/not_found/i.test(error.message || '')) throw error;   // already gone = same end result
+        }
+        this.dropExam(cls, e.id);
+        this.toast('تم حذف الامتحان.');
+      } catch (x) { this.toast(this.explainExams(x), 'error'); }
+      finally { this.examBusy = false; this.busy = false; this.examReq++; }
+    },
+    explainExams(e) {
+      const m = (e?.message || String(e)).toLowerCase();
+      if (e?.code === 'PGRST205' || e?.code === '42P01' || e?.code === 'PGRST202' || m.includes('class_exams') || m.includes('could not find the function')) return 'جدول الامتحانات لسه متفعّلش. شغّل supabase/migrations/007_exam_schedule.sql.';
+      if (m.includes('not_allowed') || m.includes('row-level security') || m.includes('permission denied')) return 'مش مسموح لك تعدّل جدول الامتحانات.';
+      if (m.includes('invalid_title')) return 'اسم الامتحان غير صحيح (فاضي أو أطول من ' + EXAM_TITLE_MAX + ' حرف).';
+      if (m.includes('invalid_date')) return 'التاريخ غير صحيح.';
+      if (m.includes('invalid_class')) return 'الفصل غير صحيح.';
+      if (m.includes('not_found')) return 'الامتحان ده اتحذف قبل كده.';
+      if (m.includes('failed to fetch') || m.includes('network')) return 'مشكلة في الاتصال بالإنترنت. حاول تاني.';
+      return this.explain(e);
+    },
+
+    /* ---------- شات الدفعة (tables: chat_messages, chat_reads; supabase/migrations/008_class_chat.sql) ----------
+       The browser only ever sends { content, client_id }. The sender id and official name are stamped by a database
+       trigger, and RLS lets only registered students read/insert, so names cannot be changed or faked from here. */
+    get chatBadge() { return this.chatUnread > 99 ? '99+' : Number(this.chatUnread).toLocaleString('ar-EG'); },
+    get chatItems() {   // flat render list: day chips, the unread divider, and the bubbles
+      const out = []; let lastDay = '';
+      for (const m of this.chatMsgs) {
+        const d = new Date(m.created_at), day = isNaN(d) ? '' : localDateKey(d);
+        if (day && day !== lastDay) { out.push({ kind: 'day', key: 'd' + day, label: this.chatDayLabel(d) }); lastDay = day; }
+        if (m.id != null && m.id === this.chatDividerId) out.push({ kind: 'unread', key: 'unread' });
+        out.push({ kind: 'msg', key: m.client_id, m, mine: m.sender_id === this.uid });
+      }
+      return out;
+    },
+    chatTime(d) { const x = new Date(d); return isNaN(x) ? '' : x.toLocaleTimeString('ar-EG', { hour: 'numeric', minute: '2-digit', hour12: true }); },
+    chatDayLabel(d) {
+      const now = new Date(), key = localDateKey(d);
+      if (key === localDateKey(now)) return 'اليوم';
+      if (key === localDateKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1))) return 'أمس';
+      return d.toLocaleDateString('ar-EG', d.getFullYear() === now.getFullYear() ? { weekday: 'long', day: 'numeric', month: 'long' } : { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    },
+    chatColor(id) { let h = 0; for (const c of String(id || '')) h = (h * 31 + c.charCodeAt(0)) >>> 0; return `hsl(${h % 360},70%,72%)`; },
+
+    async openChat() {
+      if (this.view === 'chat') return;
+      this.view = 'chat'; this.chatDividerId = 0; this.chatAtBottom = true;
+      if (await this.loadChat()) {
+        if (this.view !== 'chat') return;   // navigated away while loading
+        const first = this.chatMsgs.find(m => m.id != null && m.id > this.chatReadLocal && m.sender_id !== this.uid);
+        this.chatDividerId = first ? first.id : 0;   // "unread messages" divider goes before the first message I haven't read
+      }
+      this.$nextTick(() => this.chatPlace());
+    },
+    async refreshChat() { if (await this.loadChat()) { this.$nextTick(() => this.chatMeasure()); this.toast('تم التحديث.'); } },
+    async loadChat(silent = false) {
+      if (!sb) { this.chatLoaded = true; return true; }   // demo mode: messages live in memory only
+      if (!silent) { this.chatError = ''; this.chatLoading = !this.chatMsgs.length; }
+      const [m, r] = await Promise.all([
+        sb.from('chat_messages').select(CHAT_COLS).order('id', { ascending: false }).limit(CHAT_PAGE),   // newest page, shown oldest-first
+        sb.from('chat_reads').select('last_read_id').eq('student_id', this.uid).maybeSingle()
+      ]);
+      this.chatLoading = false;
+      if (m.error) { if (isMissing(m.error)) this.chatMissing = true; if (!silent) this.chatError = this.explainChat(m.error); return false; }
+      const lr = r.data ? Number(r.data.last_read_id) || 0 : 0;
+      this.chatReadLocal = Math.max(this.chatReadLocal, lr); this.chatReadSent = Math.max(this.chatReadSent, lr);
+      const rows = (m.data || []).slice().reverse().map(normChat);
+      const pending = this.chatMsgs.filter(x => x.id == null && !rows.some(y => y.client_id === x.client_id));   // unsent / failed bubbles survive a reload
+      this.chatMsgs = [...rows, ...pending].sort(chatCmp);
+      this.chatHasMore = (m.data || []).length === CHAT_PAGE;
+      this.chatLoaded = true; this.chatError = '';
+      return true;
+    },
+    async chatLoadOlder() {
+      if (!sb || this.chatLoadingOlder || !this.chatHasMore) return;
+      const first = this.chatMsgs.find(m => m.id != null), box = this.$refs.chatScroll;
+      if (!first || !box) return;
+      this.chatLoadingOlder = true;
+      const prevH = box.scrollHeight, prevTop = box.scrollTop;
+      const { data, error } = await sb.from('chat_messages').select(CHAT_COLS).lt('id', first.id).order('id', { ascending: false }).limit(CHAT_PAGE);
+      this.chatLoadingOlder = false;
+      if (error) return this.toast(this.explainChat(error), 'error');
+      const rows = (data || []).slice().reverse().map(normChat).filter(r => !this.chatMsgs.some(x => x.client_id === r.client_id));
+      this.chatHasMore = (data || []).length === CHAT_PAGE;
+      this.chatMsgs = [...rows, ...this.chatMsgs].sort(chatCmp);
+      this.$nextTick(() => { box.scrollTop = prevTop + (box.scrollHeight - prevH); });   // keep the reader where they were
+    },
+    async chatCatchUp() {   // fetch whatever arrived after the newest message we know (after a reconnect, or as a safety net)
+      if (!sb || !this.profile || !this.chatLoaded || this.chatMissing) return;
+      const last = this.chatMsgs.reduce((a, m) => (m.id != null && m.id > a ? m.id : a), 0);
+      if (!last) return this.loadChat(true);
+      const { data, error } = await sb.from('chat_messages').select(CHAT_COLS).gt('id', last).order('id', { ascending: true }).limit(200);
+      if (!error && data) data.forEach(r => this.chatReceive(r));
+    },
+
+    /* realtime + unread */
+    async chatStart() {
+      if (!sb || !this.profile) return;
+      const uid = this.uid;
+      try {
+        const { data, error } = await sb.from('chat_reads').select('last_read_id').eq('student_id', uid).maybeSingle();
+        if (error) { if (isMissing(error)) { this.chatMissing = true; return; } }   // migration 008 not run yet: chat stays off, rest of the site is unaffected
+        else if (data) { const lr = Number(data.last_read_id) || 0; this.chatReadLocal = Math.max(this.chatReadLocal, lr); this.chatReadSent = Math.max(this.chatReadSent, lr); }
+      } catch (e) { console.error('Chat init failed:', e); }
+      if (!this.profile || this.profile.id !== uid) return;   // signed out meanwhile
+      await this.chatPushState();
+      if (!this.chatMissing) this.chatSubscribe();
+    },
+    async chatSubscribe() {
+      if (!sb || chatChannel || chatSubBusy || !this.profile) return;
+      chatSubBusy = true;
+      try {
+        const { data } = await sb.auth.getSession();
+        if (!data || !data.session || !this.profile) return;
+        sb.realtime.setAuth(data.session.access_token);   // Realtime must use the student's JWT: RLS is applied per subscriber
+        chatChannel = sb.channel('chat_messages_feed')
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, p => this.chatReceive(p.new))
+          .subscribe(status => {
+            this.chatLive = status === 'SUBSCRIBED';
+            if (status === 'SUBSCRIBED') { this.chatPushState(); if (this.chatLoaded) this.chatCatchUp(); }   // (re)connected: fill anything missed
+          });
+      } catch (e) { console.error('Chat subscribe failed:', e); }
+      finally { chatSubBusy = false; }
+    },
+    /* one entry point for every incoming row: Realtime echo, insert response, catch-up page */
+    chatReceive(row) {
+      if (!row || row.id == null || !row.client_id) return;
+      const msg = normChat(row), mine = msg.sender_id === this.uid;
+      const i = this.chatMsgs.findIndex(m => m.client_id === msg.client_id);
+      if (i >= 0) {   // my own optimistic bubble (or a duplicate event): swap in the stored row, same DOM node
+        const next = this.chatMsgs.slice(); next[i] = msg; this.chatMsgs = next.sort(chatCmp);
+        return;
+      }
+      if (!mine && msg.id > this.chatReadLocal) { this.chatUnread++; this.chatPushSoon(); }   // someone else's message I have not read yet
+      if (this.chatLoaded) {
+        this.chatMsgs = [...this.chatMsgs, msg].sort(chatCmp);
+        this.$nextTick(() => { if (mine || this.chatAtBottom) this.chatScrollBottom(); else this.chatMeasure(); });
+      }
+    },
+    chatPushSoon() { clearTimeout(chatTimer); chatTimer = setTimeout(() => this.chatPushState(), 400); },
+    async chatPushState() {   // tell the server how far I have read (if that moved) and take its unread count as the truth
+      if (!sb || !this.profile || this.chatMissing) return;
+      const seq = ++chatSeq, upTo = this.chatReadLocal;
+      try {
+        let res;
+        if (upTo > this.chatReadSent) { res = await sb.rpc('chat_mark_read', { p_up_to: upTo }); if (!res.error) this.chatReadSent = Math.max(this.chatReadSent, upTo); }
+        else res = await sb.rpc('chat_unread_count');
+        if (res.error) { if (isMissing(res.error)) this.chatMissing = true; return; }
+        if (seq === chatSeq && this.profile) this.chatUnread = Math.max(0, Number(res.data) || 0);   // ignore answers older than the latest request
+      } catch (e) { console.error('Unread sync failed:', e); }
+    },
+    chatAdvanceRead(upTo) {   // messages up to this id have been seen: lower the badge now, confirm with the server shortly
+      if (!(upTo > this.chatReadLocal)) return;
+      let seen = 0;
+      for (const m of this.chatMsgs) if (m.id != null && m.id > this.chatReadLocal && m.id <= upTo && m.sender_id !== this.uid) seen++;
+      this.chatReadLocal = upTo;
+      this.chatUnread = Math.max(0, this.chatUnread - seen);
+      this.chatPushSoon();
+    },
+    chatReadProgress() {   // the newest message that is (at least partly) on screen counts as read; nothing counts while the tab is hidden
+      if (this.view !== 'chat' || document.hidden) return;
+      const box = this.$refs.chatScroll; if (!box) return;
+      const els = box.querySelectorAll('[data-mid]'); if (!els.length) return;
+      const limit = box.getBoundingClientRect().bottom - 6;
+      for (let i = els.length - 1; i >= 0; i--) {
+        if (els[i].getBoundingClientRect().top < limit) { this.chatAdvanceRead(Number(els[i].dataset.mid)); break; }
+      }
+    },
+
+    /* scrolling + composer */
+    onChatScroll() { if (chatRaf) return; chatRaf = requestAnimationFrame(() => { chatRaf = 0; this.chatMeasure(); }); },
+    chatMeasure() {
+      if (this.view !== 'chat') return;
+      const b = this.$refs.chatScroll; if (!b) return;
+      this.chatAtBottom = b.scrollHeight - b.scrollTop - b.clientHeight < 80;
+      this.chatReadProgress();
+    },
+    chatScrollBottom() { const b = this.$refs.chatScroll; if (b) b.scrollTop = b.scrollHeight; this.chatMeasure(); },
+    chatPlace() {   // on open: jump to the first unread message, otherwise to the newest one
+      const box = this.$refs.chatScroll; if (!box) return;
+      const d = box.querySelector('[data-unread-divider]');
+      if (d) box.scrollTop = d.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop - 8;
+      else box.scrollTop = box.scrollHeight;
+      this.chatMeasure();
+      if (window.matchMedia && matchMedia('(hover:hover)').matches && this.$refs.chatInput) this.$refs.chatInput.focus();   // no keyboard pop-up on phones
+    },
+    chatGrow() { const t = this.$refs.chatInput; if (!t) return; t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 144) + 'px'; },
+    onChatKey(e) {   // Enter sends, Shift+Enter inserts a new line
+      if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); this.sendChat(); }
+    },
+
+    /* sending: optimistic bubble first, then the insert; failures stay visible with retry */
+    sendChat() {
+      const text = this.chatText.trim().slice(0, CHAT_MAX);
+      if (!text || !this.authed) return;
+      if (this.chatMissing) return this.toast(this.explainChat({ code: 'PGRST205' }), 'error');
+      const m = { id: null, client_id: uuid4(), sender_id: this.uid, sender_name: this.authorLabel, content: text, created_at: new Date().toISOString(), state: 'sending', err: '' };
+      this.chatMsgs = [...this.chatMsgs, m];
+      this.chatText = '';
+      this.$nextTick(() => { this.chatGrow(); this.chatScrollBottom(); const t = this.$refs.chatInput; if (t) t.focus(); });
+      this.chatDeliver(m.client_id);
+    },
+    async chatDeliver(cid) {
+      const cur = () => this.chatMsgs.find(x => x.client_id === cid), m = cur();
+      if (!m) return;
+      if (!sb) {   // demo mode
+        this.chatReceive({ id: ++this.chatDemoSeq, client_id: cid, sender_id: this.uid, sender_name: m.sender_name, content: m.content, created_at: m.created_at });
+        return;
+      }
+      let row = null, err = null;
+      try {
+        const r = await sb.from('chat_messages').insert({ content: m.content, client_id: cid }).select(CHAT_COLS).single();   // only these two columns are allowed by the database
+        row = r.data; err = r.error;
+        if (err && err.code === '23505') {   // an earlier attempt already went through: just fetch that row
+          const q = await sb.from('chat_messages').select(CHAT_COLS).eq('client_id', cid).eq('sender_id', this.uid).maybeSingle();
+          if (q.data) { row = q.data; err = null; }
+        }
+      } catch (e) { err = e; }
+      if (!cur()) return;   // discarded meanwhile
+      if (err || !row) {
+        if (isMissing(err)) this.chatMissing = true;
+        this.chatMsgs = this.chatMsgs.map(x => x.client_id === cid ? { ...x, state: 'failed', err: this.explainChat(err) } : x);
+        return;
+      }
+      this.chatReceive(row);
+    },
+    chatRetry(m) { this.chatMsgs = this.chatMsgs.map(x => x.client_id === m.client_id ? { ...x, state: 'sending', err: '' } : x); this.chatDeliver(m.client_id); },
+    chatDiscard(m) { this.chatMsgs = this.chatMsgs.filter(x => x.client_id !== m.client_id); },
+    explainChat(e) {
+      const m = (e?.message || '').toLowerCase();
+      if (isMissing(e)) return 'شات الدفعة لسه متفعّلش. شغّل supabase/migrations/008_class_chat.sql.';
+      if (m.includes('rate_limited')) return 'بتبعت رسايل بسرعة. استنى ثواني وحاول تاني.';
+      if (m.includes('not_a_student') || m.includes('not_authenticated')) return 'حسابك مش مسجل كطالب. كلّم المسؤول.';
+      if (m.includes('empty')) return 'اكتب رسالة الأول.';
+      if (e?.code === '23514' || m.includes('check constraint')) return 'الرسالة أطول من المسموح (1000 حرف).';
+      if (e?.code === '42501' || m.includes('row-level security') || m.includes('permission denied')) return 'مش مسموح لك تبعت رسايل. سجّل دخول تاني.';
+      if (m.includes('failed to fetch') || m.includes('network')) return 'مشكلة في الاتصال بالإنترنت. اضغط «إعادة المحاولة».';
+      return e ? this.explain(e) : 'فشل الإرسال.';
+    },
+
+    /* ---------- شرح يوتيوب (table: youtube_videos; supabase/migrations/010_youtube_explanations.sql) ----------
+       The browser only sends { video_id, title }. A database trigger stamps the submitter's id + official name and the canonical
+       URL, and RLS lets only registered students read/insert, so names and links cannot be faked from here. */
+    ytThumb(id) { return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`; },
+    ytEmbed(id) { return `https://www.youtube-nocookie.com/embed/${id}?rel=0&autoplay=1`; },
+    ytTitleOf(v) { return (v.title || '').trim() || 'فيديو شرح'; },
+    ytPlay(v) { this.ytPlaying = { ...this.ytPlaying, [v.id]: true }; },
+    async openYoutube() {
+      if (this.view === 'youtube') return;
+      this.view = 'youtube';
+      await this.ytLoad();
+    },
+    async ytRefresh() { if (await this.ytLoad()) this.toast('تم التحديث.'); },
+    async ytLoad() {
+      if (!sb) { this.ytLoaded = true; return true; }   // demo mode: videos live in memory only
+      this.ytListError = ''; this.ytLoading = true;
+      const { data, error } = await sb.from('youtube_videos').select('id,video_id,title,submitter_name,created_at').order('id', { ascending: false }).limit(200);
+      this.ytLoading = false;
+      if (error) { if (isMissing(error)) this.ytMissing = true; this.ytListError = this.explainYt(error); return false; }
+      this.ytVideos = data || []; this.ytLoaded = true; this.ytMissing = false;
+      return true;
+    },
+    async ytSubmit() {
+      if (this.ytSaving || !this.authed) return;
+      const id = parseYouTube(this.ytUrl), title = this.ytTitle.trim().slice(0, 100);
+      if (!this.ytUrl.trim()) { this.ytError = 'الصق رابط الفيديو الأول.'; return; }
+      if (!id) { this.ytError = 'الرابط ده مش رابط فيديو يوتيوب صحيح. الصق رابط زي https://www.youtube.com/watch?v=… أو https://youtu.be/…'; return; }
+      if (this.ytVideos.some(v => v.video_id === id)) { this.ytError = 'الفيديو ده متضاف قبل كده.'; return; }
+      this.ytSaving = true; this.ytError = '';
+      try {
+        if (!sb) {   // demo mode
+          this.ytVideos = [{ id: ++this.ytDemoSeq, video_id: id, title, submitter_name: this.authorLabel, created_at: new Date().toISOString() }, ...this.ytVideos];
+        } else {
+          const { data, error } = await sb.from('youtube_videos').insert({ video_id: id, title }).select('id,video_id,title,submitter_name,created_at').single();
+          if (error) { if (isMissing(error)) this.ytMissing = true; this.ytError = this.explainYt(error); return; }
+          if (!this.ytVideos.some(v => v.id === data.id)) this.ytVideos = [data, ...this.ytVideos];
+        }
+        this.ytUrl = ''; this.ytTitle = '';
+        this.toast('تمت إضافة الفيديو. شكراً إنك بتفيد غيرك 🥰');
+      } catch (e) { this.ytError = this.explainYt(e); }
+      finally { this.ytSaving = false; }
+    },
+    explainYt(e) {
+      const m = (e?.message || '').toLowerCase();
+      if (isMissing(e)) return 'قسم شرح يوتيوب لسه متفعّلش. شغّل supabase/migrations/010_youtube_explanations.sql.';
+      if (e?.code === '23505') return 'الفيديو ده متضاف قبل كده.';
+      if (e?.code === '23514' || m.includes('check constraint')) return 'الرابط أو العنوان مش مقبول (العنوان أقصاه 100 حرف).';
+      if (m.includes('not_a_student') || m.includes('not_authenticated')) return 'حسابك مش مسجل كطالب. كلّم المسؤول.';
+      if (e?.code === '42501' || m.includes('row-level security') || m.includes('permission denied')) return 'مش مسموح لك تضيف فيديو. سجّل دخول تاني.';
+      if (m.includes('failed to fetch') || m.includes('network')) return 'مشكلة في الاتصال بالإنترنت. حاول تاني.';
+      return e ? this.explain(e) : 'حصلت مشكلة. حاول تاني.';
+    },
+
+    /* ---------- class wall (table: class_posts) — now only the per-class "الواجبات والملاحظات" pages ---------- */
+    async switchWall() {   // homework board of the active class
       const scope = this.wallClass || 'legacy';
       if (scope !== this.postsScope) { this.posts = []; this.wallLoaded = false; this.postsError = ''; this.postsScope = scope; this.editId = ''; this.delId = ''; }
       if (!this.wallLoaded) await this.loadPosts();
